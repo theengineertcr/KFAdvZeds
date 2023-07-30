@@ -61,7 +61,7 @@ defaultproperties
     HealthMax=600//700
     PlayerCountHealthScale=0.10//0.15
     PlayerNumHeadHealthScale=0.05
-	HeadHealth=200//250
+    HeadHealth=200//250
     MeleeDamage=15
     JumpZ=320.000000
 
@@ -78,19 +78,19 @@ defaultproperties
     ColHeight=33
     ZombieFlag=1
 
-	SeveredHeadAttachScale=0.9
-	SeveredLegAttachScale=0.9
-	SeveredArmAttachScale=0.9
+    SeveredHeadAttachScale=0.9
+    SeveredLegAttachScale=0.9
+    SeveredArmAttachScale=0.9
 
-	BleedOutDuration=6.0
-	HeadHeight=1.0
-	HeadScale=1.5
-	ProjectileFireInterval=5.5
-	BurnDamageScale=0.25
-	OnlineHeadshotOffset=(X=20,Y=0,Z=55)
-	OnlineHeadshotScale=1.0
-	MotionDetectorThreat=1.0
-	ZapThreshold=0.75
-	bHarpoonToHeadStuns=true
-	bHarpoonToBodyStuns=false
+    BleedOutDuration=6.0
+    HeadHeight=1.0
+    HeadScale=1.5
+    ProjectileFireInterval=5.5
+    BurnDamageScale=0.25
+    OnlineHeadshotOffset=(X=20,Y=0,Z=55)
+    OnlineHeadshotScale=1.0
+    MotionDetectorThreat=1.0
+    ZapThreshold=0.75
+    bHarpoonToHeadStuns=true
+    bHarpoonToBodyStuns=false
 }

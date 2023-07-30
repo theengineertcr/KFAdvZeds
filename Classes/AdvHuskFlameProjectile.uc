@@ -5,11 +5,11 @@ class AdvHuskFlameProjectile extends FlameTendril;
 //-----------------------------------------------------------------------------
 simulated function PostBeginPlay()
 {
-	super.PostBeginPlay();
+    super.PostBeginPlay();
 
-	// Difficulty Scaling
-	if (Level.Game != none)
-	{
+    // Difficulty Scaling
+    if (Level.Game != none)
+    {
         if( Level.Game.GameDifficulty < 2.0 )
         {
             Damage = default.Damage - 3;
@@ -26,7 +26,7 @@ simulated function PostBeginPlay()
         {
             Damage = default.Damage + 4;
         }
-	}
+    }
 }
 
 defaultproperties
