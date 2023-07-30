@@ -1,5 +1,5 @@
 //=============================================================================
-// Modified Husk fireball
+// Modified Husk fireball(WIP)
 //=============================================================================
 class AdvHuskFireProjectile extends HuskFireProjectile;
 

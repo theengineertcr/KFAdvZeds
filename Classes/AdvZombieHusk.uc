@@ -24,6 +24,13 @@ var class<Projectile> AdvHuskFireProjClass;
 var class<Projectile> AdvHuskFlameProjClass;
 
 
+// Config Variables
+
+var bool bEnableHuskMoveAndShoot;
+var bool bEnableHuskFlamethrower;
+var bool bEnableHuskFlameAndMove;
+var bool bIgnoreDifficulty;
+
 // The Husk's AnimSet does not have our custom anims, and
 // We don't want to have a duplicate Husk Mesh inside our 
 // ukx Package for the sake of saving space, so instead we-
@@ -146,6 +153,7 @@ function RangedAttack(Actor A)
         if( Level.Game.GameDifficulty < 4.0 )
         {
             ChargeChance = 0.33;
+			FlamingChargeChance = 0.05;
         }
         else if( Level.Game.GameDifficulty < 5.0 )
         {
@@ -158,19 +166,19 @@ function RangedAttack(Actor A)
 			FlamingChargeChance = 0.33;
         }
 		
-		if( FRand() < FlamingChargeChance && Level.Game.GameDifficulty >= 5.0 && VSize(A.Location-Location) <= 600) 
+		if( FRand() < FlamingChargeChance && (Level.Game.GameDifficulty >= 5.0 || bIgnoreDifficulty) && VSize(A.Location-Location) <= 600 && bEnableHuskFlamethrower && bEnableHuskFlameAndMove) 
 		{
 			SetAnimAction('MovingAndBurning');
     		RunAttackTimeout = GetAnimDuration('SprayBurnsMove', 1.0);
     		bMovingRangedAttack=true;
 		}
-		else if(Level.Game.GameDifficulty >= 5.0 && VSize(A.Location-Location) <= 600)
+		else if((Level.Game.GameDifficulty >= 5.0  || bIgnoreDifficulty) && VSize(A.Location-Location) <= 600 && bEnableHuskFlamethrower)
 		{
 			SetAnimAction('SprayBurns');
 			Controller.bPreparingMove = true;
 			Acceleration = vect(0,0,0);	
 		}
-        else if( FRand() < ChargeChance && Level.Game.GameDifficulty >= 4.0  )
+        else if( FRand() < ChargeChance && (Level.Game.GameDifficulty >= 4.0 || bIgnoreDifficulty) && bEnableHuskMoveAndShoot)
 		{
     		SetAnimAction('MovingAndShooting');
     		RunAttackTimeout = GetAnimDuration('ShootBurnsMove', 1.0);
@@ -331,7 +339,7 @@ function SpawnFlameShots()
 	GetAxes(Rotation,X,Y,Z);
 	FireStart = GetBoneCoords('Barrel').Origin;
 	// Use the FlameTendril
-	AdvHuskFlameProjClass = Class'FlameTendril';
+	AdvHuskFlameProjClass = Class'AdvHuskFlameProjectile';
 	if ( !SavedFireProperties.bInitialized )
 	{
 		SavedFireProperties.AmmoClass = Class'SkaarjAmmo';
@@ -717,6 +725,6 @@ defaultproperties
 	//-------------------------------------------------------------------------------
 	EventClasses(0)="KFAdvZeds.AdvZombieHusk_S"
     AdvHuskFireProjClass=Class'KFAdvZeds.AdvHuskFireProjectile'
-	AdvHuskFlameProjClass=None
+	AdvHuskFlameProjClass=Class'KFAdvZeds.AdvHuskFlameProjectile'
     ControllerClass=Class'KFAdvZeds.AdvHuskZombieController'
 }
