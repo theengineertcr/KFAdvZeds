@@ -290,7 +290,7 @@ function SpawnTwoShots()
     GetAxes(Rotation,X,Y,Z);
     FireStart = GetBoneCoords('Barrel').Origin;
     // Use the Advanced Husks's Projectile
-    AdvHuskFireProjClass = Class'KFAdvZeds.AdvHuskFireProjectile';
+    AdvHuskFireProjClass = Class'AdvHuskFireProjectile';
     if ( !SavedFireProperties.bInitialized )
     {
         SavedFireProperties.AmmoClass = Class'SkaarjAmmo';
@@ -728,7 +728,7 @@ defaultproperties
     // NOTE: Most Default Properties are set in the base class to eliminate hitching
     //-------------------------------------------------------------------------------
     EventClasses(0)="KFAdvZeds.AdvZombieHusk_S"
-    AdvHuskFireProjClass=Class'KFAdvZeds.AdvHuskFireProjectile'
-    AdvHuskFlameProjClass=Class'KFAdvZeds.AdvHuskFlameProjectile'
-    ControllerClass=Class'KFAdvZeds.AdvHuskZombieController'
+    AdvHuskFireProjClass=Class'AdvHuskFireProjectile'
+    AdvHuskFlameProjClass=Class'AdvHuskFlameProjectile'
+    ControllerClass=Class'AdvHuskZombieController'
 }
