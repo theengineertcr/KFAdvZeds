@@ -1,6 +1,11 @@
-//=============================================
-// Standard Advanced Husk Skin
-//=============================================
+/*
+ * Standard Advanced Husk Skin
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : MIT
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvZombieHusk_S extends AdvZombieHusk;
 
 // We need to let the game load our Animation set
@@ -9,18 +14,18 @@ class AdvZombieHusk_S extends AdvZombieHusk;
 defaultproperties
 {
     DetachedArmClass=class'SeveredArmHusk'
-	DetachedSpecialArmClass=class'SeveredArmHuskGun'
-	DetachedLegClass=class'SeveredLegHusk'
-	DetachedHeadClass=class'SeveredHeadHusk'
+    DetachedSpecialArmClass=class'SeveredArmHuskGun'
+    DetachedLegClass=class'SeveredLegHusk'
+    DetachedHeadClass=class'SeveredHeadHusk'
 
     Mesh=SkeletalMesh'KF_Freaks2_Trip.Burns_Freak'
-	
+
     Skins(0)=Texture'KF_Specimens_Trip_T_Two.burns.burns_tatters'
 
     AmbientSound=Sound'KF_BaseHusk.Husk_IdleLoop'
     MoanVoice=Sound'KF_EnemiesFinalSnd.Husk_Talk'
     JumpSound=Sound'KF_EnemiesFinalSnd.Husk_Jump'
-	MeleeAttackHitSound=sound'KF_EnemiesFinalSnd.Bloat_HitPlayer'
+    MeleeAttackHitSound=sound'KF_EnemiesFinalSnd.Bloat_HitPlayer'
 
     HitSound(0)=Sound'KF_EnemiesFinalSnd.Husk_Pain'
     DeathSound(0)=Sound'KF_EnemiesFinalSnd.Husk_Death'
