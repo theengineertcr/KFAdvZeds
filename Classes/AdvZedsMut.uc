@@ -7,7 +7,7 @@
  * Copyright    : 2023 theengineertcr
 */
 class AdvZedsMut extends Mutator
-    config(AdvZedsConfig);
+    config(KFAdvZeds);
 
 
 // Load all relevant packages
