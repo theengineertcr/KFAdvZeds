@@ -1,5 +1,11 @@
-// Mutator that replaces regular zeds with their advanced variants
-
+/*
+ * Mutator that replaces regular zeds with their advanced variants
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : MIT
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvZedsMut extends Mutator
     config(AdvZedsConfig);
 

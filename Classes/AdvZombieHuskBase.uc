@@ -1,6 +1,11 @@
-//=============================================================================
-// Modified Husk base
-//=============================================================================
+/*
+ * Modified Husk base
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : MIT
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvZombieHuskBase extends KFMonster
     abstract;
 

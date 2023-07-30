@@ -1,7 +1,11 @@
-//=============================================================================
-// Modified Husk - uses new attacks based on distance and difficulty!
-//=============================================================================
-
+/*
+ * Modified Husk - uses new attacks based on distance and difficulty!
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : MIT
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvZombieHusk extends AdvZombieHuskBase
     abstract;
 

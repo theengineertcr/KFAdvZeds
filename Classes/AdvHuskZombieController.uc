@@ -1,6 +1,11 @@
-//=============================================================================
-// Modified Husk Controller class
-//=============================================================================
+/*
+ * Modified Husk Controller class
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : MIT
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvHuskZombieController extends KFMonsterController;
 
 // Overridden to create a delay between when the husk fires his projectiles

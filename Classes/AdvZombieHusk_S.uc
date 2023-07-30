@@ -1,6 +1,11 @@
-//=============================================
-// Standard Advanced Husk Skin
-//=============================================
+/*
+ * Standard Advanced Husk Skin
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : MIT
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvZombieHusk_S extends AdvZombieHusk;
 
 // We need to let the game load our Animation set
