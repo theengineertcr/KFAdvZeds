@@ -10,6 +10,14 @@ Husks:
 - Use flamethrower attack.
 - Use flamethrower and move at the same time
 
+Stalker:
+
+- Harder to see and hear on higher difficulties
+- Leaps behind her targets if spotted.
+- If spotted in the middle of an attack animation, cancels with a backstep before leaping.
+- Armour piercing attacks on backstab.
+- Heavy camera shakes on backstab.
+  
 ## Installation
 
 Mutator:
