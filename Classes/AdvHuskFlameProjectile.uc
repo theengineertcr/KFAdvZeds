@@ -19,18 +19,25 @@ simulated function PostBeginPlay()
         if( Level.Game.GameDifficulty < 2.0 )
         {
             Damage = default.Damage - 3;
+            DamageRadius = default.DamageRadius * 0.5;
         }
         else if( Level.Game.GameDifficulty < 4.0 )
         {
             Damage = default.Damage * 1.0;
+            DamageRadius = default.DamageRadius * 1.0;
+
         }
         else if( Level.Game.GameDifficulty < 5.0 )
         {
-            Damage = default.Damage + 2;
+            Damage = default.Damage + 4;
+            DamageRadius = default.DamageRadius * 1.25;
+            PenDamageReduction = default.PenDamageReduction * 1.25;
         }
         else // Hardest difficulty
         {
-            Damage = default.Damage + 4;
+            Damage = default.Damage + 6;
+            DamageRadius = default.DamageRadius * 1.5;
+            PenDamageReduction = default.PenDamageReduction * 1.5;
         }
     }
 }

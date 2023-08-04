@@ -10,7 +10,7 @@ class AdvZombieHusk extends AdvZombieHuskBase
     abstract;
 
 
-// We need to let the game load our Animation set
+// Package Loading
 #exec OBJ LOAD FILE=KFAdvZeds_A.ukx
 
 
@@ -29,32 +29,23 @@ var class<Projectile> AdvHuskFlameProjClass;
 
 
 // Config Variables
-
 var bool bEnableHuskMoveAndShoot;
 var bool bEnableHuskFlamethrower;
 var bool bEnableHuskFlameAndMove;
 var bool bIgnoreDifficulty;
 
-// The Husk's AnimSet does not have our custom anims, and
-// We don't want to have a duplicate Husk Mesh inside our
-// ukx Package for the sake of saving space, so instead we-
-// -'ll force Husks to use our Animset via linking their
-// mesh to it!
 
 simulated function BeginPlay()
 {
+    //Link the mesh to our custom animations
     LinkSkelAnim(MeshAnimation'AdvBurns_Anim');
     Super.BeginPlay();
 }
 
-// The code above was taken from the randomized zed models mutator by Marco,
-// And I recall Linking Skeletal Animations does not work in online games,
-// At least when I used this same function in KFOldSchool Zeds...
-
 
 simulated function PostBeginPlay()
 {
-    // Difficulty Scaling
+    // Difficulty Scaling, same as default
     if (Level.Game != none && !bDiffAdjusted)
     {
         if( Level.Game.GameDifficulty < 2.0 )
@@ -120,13 +111,11 @@ function RangedAttack(Actor A)
     // Additional local variable "ChargeChance"
     // Used to determine the chance for a Husk to
     // Shoot while charging towards their victim
-
     local int LastFireTime;
     local float ChargeChance;
 
 
     // Ditto but for the flamethrower attack
-
     local float FlamingChargeChance;
 
 
