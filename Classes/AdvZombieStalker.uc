@@ -31,94 +31,6 @@ var bool bSpeedboostAfterAttack;// Gain a % increase in movement and dodge speed
 var float  SoundLevelMultiplier;// Multiplier that's used to reduce the volume of her sounds.
 
 
-function ClawDamageTarget()
-{
-    local vector PushDir;
-    local KFHumanPawn HumanTarget;
-    local KFPlayerController HumanTargetController;
-    local float UsedMeleeDamage;
-
-	super.ClawDamageTarget();
-
-    if (MeleeDamageTarget(UsedMeleeDamage,PushDir))
-    {
-        HumanTarget = KFHumanPawn(Controller.Target);
-
-        if( HumanTarget!=none )
-            HumanTargetController = KFPlayerController(HumanTarget.Controller);
-
-		//If were flanking our target, or were not exhausted from performing a leap attack, we'll disorient our foe's view.
-        if( HumanTargetController!=none && (AdvStalkerController(Controller).bFlanking || (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds))
-            HumanTargetController.ShakeView(RotMag, RotRate, RotTime, OffsetMag, OffsetRate, OffsetTime);
-	}
-}
-
-function RangedAttack(Actor A)
-{
-	if((AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds && !AdvStalkerController(Controller).bFlanking && (Physics == PHYS_Walking))
-	{
-		SetAnimAction('DodgeF');
-		Controller.GoToState('WaitForAnim');
-		PrepareToPounce();
-	}
-	else if ( bShotAnim || (Physics != PHYS_Walking))
-		return;
-	else if ( CanAttack(A) )
-	{
-		bShotAnim = true;
-		SetAnimAction('Claw');
-		Controller.bPreparingMove = true;
-		Acceleration = vect(0,0,0);
-		return;
-	}
-}
-
-function bool DoPounce()
-{
-	if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking))
-		return false;
-
-	Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
-	Velocity.Z = JumpZ * 1.75;
-	SetPhysics(PHYS_Falling);
-	SetCollision(false, false, false);
-	bPouncing=true;
-	return true;
-}
-
-
-function PrepareToPounce()
-{
-	if ( bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking))
-		return;
-
-	Velocity = Normal(Location-Controller.Target.Location)*PounceSpeed*0.7;
-	Velocity.Z = JumpZ * 0.5;
-	SetPhysics(PHYS_Falling);
-	bPouncing=true;
-}
-
-event Landed(vector HitNormal)
-{
-	bPouncing=false;
-	SetCollision(true, true, true);
-	super.Landed(HitNormal);
-}
-
-simulated function BeginPlay()
-{
-    // Link the mesh to our custom animations
-    LinkSkelAnim(MeshAnimation'AdvStalker_Anim');
-    Super.BeginPlay();
-}
-
-// Footsteps are linked to Anim-notifies
-simulated function StalkerFootstep()
-{
-	PlaySound(sound'KF_EnemiesFinalSnd.Stalker.Stalker_StepDefault', SLOT_None, FootstepVolume * (SoundLevelMultiplier));
-}
-
-
 simulated function PostBeginPlay()
 {
     // Difficulty Scaling for her stealthiness
@@ -159,6 +71,97 @@ simulated function PostBeginPlay()
 	CloakStalker();
 	super.PostBeginPlay();
 }
+
+function ClawDamageTarget()
+{
+    local vector PushDir;
+    local KFHumanPawn HumanTarget;
+    local KFPlayerController HumanTargetController;
+    local float UsedMeleeDamage;
+
+	super.ClawDamageTarget();
+
+    if (MeleeDamageTarget(UsedMeleeDamage,PushDir))
+    {
+        HumanTarget = KFHumanPawn(Controller.Target);
+
+        if( HumanTarget!=none )
+            HumanTargetController = KFPlayerController(HumanTarget.Controller);
+
+		//If were flanking our target, or were not exhausted from performing a leap attack, our strikes will disorient our foe's view.
+        if( HumanTargetController!=none && (AdvStalkerController(Controller).bFlanking || (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds))
+            HumanTargetController.ShakeView(RotMag, RotRate, RotTime, OffsetMag, OffsetRate, OffsetTime);
+	}
+}
+
+function RangedAttack(Actor A)
+{
+	if((AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds && !AdvStalkerController(Controller).bFlanking && (Physics == PHYS_Walking) && VSize(A.Location-Location)<=100)
+	{
+		SetAnimAction('DodgeF');
+		Controller.GoToState('WaitForAnim');
+		PrepareToPounce();
+	}
+	else if ( bShotAnim || (Physics != PHYS_Walking))
+		return;
+	else if ( CanAttack(A) )
+	{
+		bShotAnim = true;
+		SetAnimAction('Claw');
+		Controller.bPreparingMove = true;
+		Acceleration = vect(0,0,0);
+		return;
+	}
+}
+
+function bool DoPounce()
+{
+	if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking))
+		return false;
+
+	CloakStalker();
+	Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
+	Velocity.Z = JumpZ * 1.75;
+	SetPhysics(PHYS_Falling);
+	SetCollision(false, false, false);
+	SetAnimAction('HitB');
+	Controller.GoToState('WaitForAnim');
+	bPouncing=true;
+	return true;
+}
+
+
+function PrepareToPounce()
+{
+	if ( bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking))
+		return;
+
+	Velocity = Normal(Location-Controller.Target.Location)*PounceSpeed*0.7;
+	Velocity.Z = JumpZ * 0.5;
+	SetPhysics(PHYS_Falling);
+	bPouncing=true;
+}
+
+event Landed(vector HitNormal)
+{
+	bPouncing=false;
+	SetCollision(true, true, true);
+	super.Landed(HitNormal);
+}
+
+simulated function BeginPlay()
+{
+    // Link the mesh to our custom animations
+    LinkSkelAnim(MeshAnimation'AdvStalker_Anim');
+    Super.BeginPlay();
+}
+
+// Footsteps are linked to Anim-notifies
+simulated function StalkerFootstep()
+{
+	PlaySound(sound'KF_EnemiesFinalSnd.Stalker.Stalker_StepDefault', SLOT_None, FootstepVolume * (SoundLevelMultiplier));
+}
+
 
 simulated function PostNetBeginPlay()
 {
@@ -231,6 +234,13 @@ simulated function Tick(float DeltaTime)
 				CloakStalker();
 			}
 		}
+		if(bCloaked)
+		{
+			if(PlayerShadow != none)
+				PlayerShadow.bShadowActive = false;
+			if(RealTimeShadow != none)
+				RealTimeShadow.Destroy();
+		}
 	}
 	// If were behind our target, our attacks pierce through their armour
 	if(AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeStalkerAPClaws')
@@ -251,13 +261,7 @@ simulated function Tick(float DeltaTime)
 
 simulated function CloakStalker()
 {
-    // No cloaking if zapped
-    if( bZapped || bCloaked)
-    {
-        return;
-    }
-
-	if ( bSpotted )
+	if ( bSpotted && !bZapped && !bDecapitated && !bCrispified)
 	{
 		if( Level.NetMode == NM_DedicatedServer )
 			return;
@@ -267,6 +271,12 @@ simulated function CloakStalker()
 		bUnlit = true;
 		return;
 	}
+
+    // No cloaking if zapped
+    if( bZapped || bCloaked)
+    {
+        return;
+    }
 
 	if ( !bDecapitated && !bCrispified ) // No head, no cloak, honey.  updated :  Being charred means no cloak either :D
 	{
