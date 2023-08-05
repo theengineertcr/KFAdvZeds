@@ -384,7 +384,10 @@ simulated function CloakStalker()
         // Remove/disallow projectors on invisible people
         Projectors.Remove(0, Projectors.Length);
         bAcceptsProjectors = false;
-        SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+        if(Level.Game.GameDifficulty <= 4.0)
+        {
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+        }
     }
 }
 
@@ -424,7 +427,10 @@ simulated function UnCloakStalker()
 
             bAcceptsProjectors = true;
 
-            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+            if(Level.Game.GameDifficulty <= 4.0)
+            {
+                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+            }
         }
     }
 }
