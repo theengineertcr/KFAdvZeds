@@ -78,7 +78,7 @@ simulated function PostBeginPlay()
     SoundRadius = default.SoundRadius / VoiceLevelDivider;
     SoundVolume = default.SoundVolume /  VoiceLevelDivider;
     MoanVolume     = default.MoanVolume / VoiceLevelDivider;
-    GruntVolume = default.GruntVolume / (VoiceLevelDivider);
+    GruntVolume = default.GruntVolume / VoiceLevelDivider;
     TransientSoundRadius = default.TransientSoundRadius / VoiceLevelDivider;
     AmbientSoundScaling  = default.AmbientSoundScaling / VoiceLevelDivider;
 
