@@ -58,10 +58,10 @@ event PostBeginPlay()
     class'AdvZombieHusk_S'.default.bEnableHuskFlameAndMove = bEnableHuskFlameAndMove;
 
     //Stalker Configs
-    class'AdvZombieStalker_S'.default.bDisorientingAttacks = bDisorientingAttacks;
-    class'AdvZombieStalker_S'.default.bPiercingAttacks     = bPiercingAttacks;
-    class'AdvZombieStalker_S'.default.bLeapIfSpotted       = bLeapIfSpotted;
-    class'AdvZombieStalker_S'.default.bPreservativeDodge   = bPreservativeDodge;
+    class'AdvZombieStalker_S'.default.bDisorientingAttacks = bEnableStalkerDisorientingAttacks;
+    class'AdvZombieStalker_S'.default.bPiercingAttacks     = bEnableStalkerPiercingAttacks;
+    class'AdvZombieStalker_S'.default.bLeapIfSpotted       = bEnableStalkerLeapIfSpotted;
+    class'AdvZombieStalker_S'.default.bPreservativeDodge   = bEnableStalkerPreservativeDodge;
 
     StalkerStealthLevel = clamp(StalkerStealthLevel, 0, 3);
     class'AdvZombieStalker_S'.default.StealthLevel = StalkerStealthLevel;
