@@ -9,31 +9,25 @@
 class AdvZombieHusk extends AdvZombieHuskBase
     abstract;
 
-
 // Package Loading
 #exec OBJ LOAD FILE=KFAdvZeds_A.ukx
-
 
 //----------------------------------------------------------------------------
 // NOTE: All Variables are declared in the base class to eliminate hitching
 //----------------------------------------------------------------------------
 
-
 // HuskFireProjClass to "AdvHuskFireProjClass"
 // Subsequent mentions have been modified as well
 var class<Projectile> AdvHuskFireProjClass;
 
-
 // New class variable for the flamethrower attack projectile
 var class<Projectile> AdvHuskFlameProjClass;
-
 
 // Config Variables
 var bool bEnableHuskMoveAndShoot;
 var bool bEnableHuskFlamethrower;
 var bool bEnableHuskFlameAndMove;
 var bool bIgnoreDifficulty;
-
 
 simulated function BeginPlay()
 {
@@ -269,6 +263,8 @@ function SpawnTwoShots()
     local rotator FireRotation;
     local KFMonsterController KFMonstControl;
 
+    if (Controller == none || IsInState('ZombieDying') || IsInState('GettingOutOfTheWayOfShot') || Physics == PHYS_Falling)
+        return;
 
     if( Controller!=None && KFDoorMover(Controller.Target)!=None )
     {
@@ -322,6 +318,8 @@ function SpawnFlameShots()
     local rotator FireRotation;
     local KFMonsterController KFMonstControl;
 
+    if (Controller == none || IsInState('ZombieDying') || IsInState('GettingOutOfTheWayOfShot') || Physics == PHYS_Falling)
+        return;
 
     if( Controller!=None && KFDoorMover(Controller.Target)!=None )
     {

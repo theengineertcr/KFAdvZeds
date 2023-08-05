@@ -12,7 +12,7 @@ class AdvZombieHuskBase extends KFMonster
 var     float   NextFireProjectileTime; // Track when we will fire again
 var()   float   ProjectileFireInterval; // How often to fire the fire projectile
 var()   float   BurnDamageScale;        // How much to reduce fire damage for the Husk
-var bool bMovingRangedAttack;			// Whether to move while performing a ranged attack
+var bool bMovingRangedAttack;            // Whether to move while performing a ranged attack
 var float RunAttackTimeout;
 
 //-------------------------------------------------------------------------------

@@ -21,10 +21,10 @@ var config bool bEnableHuskMoveAndShoot;                // Allows Husks to shoot
 var config bool bEnableHuskFlamethrower;                // Allows Husks to use their flamethrower attack
 var config bool bEnableHuskFlameAndMove;                // Allows Husks to use their flamethrower and move at the same time
 var config bool bEnableStalkerDisorientingAttacks;      // Allows Stalkers to shake the targets view, causing them to be disoriented
-var config bool bEnableStalkerPiercingAttacks;			// Allows Stalkers to pierce through the targets armour when behind them, dealing direct damage to their health
-var config bool bEnableStalkerLeapIfSpotted;			// Allows Stalkers to leap behind their target if they're facing towards them and they're close
-var config bool bEnableStalkerPreservativeDodge;   		// Allows Stalkers to dodge away from danger to preserve their own life
-var config int StalkerStealthLevel;				        // Stalkers Stealth Level. Affects both sounds and texture
+var config bool bEnableStalkerPiercingAttacks;            // Allows Stalkers to pierce through the targets armour when behind them, dealing direct damage to their health
+var config bool bEnableStalkerLeapIfSpotted;            // Allows Stalkers to leap behind their target if they're facing towards them and they're close
+var config bool bEnableStalkerPreservativeDodge;           // Allows Stalkers to dodge away from danger to preserve their own life
+var config int StalkerStealthLevel;                        // Stalkers Stealth Level. Affects both sounds and texture
 var config bool bIgnoreDifficulty;                      // All special abilities are enabled on all difficulties based on the user's settings
 
 
@@ -53,36 +53,24 @@ event PostBeginPlay()
         KF.MonsterCollection.default.MonsterClasses[8].MClassName = string(class'AdvZombieHusk_S');
 
     //Husk Configs
-    if(bEnableHuskMoveAndShoot)
-        class'AdvZombieHusk_S'.default.bEnableHuskMoveAndShoot = true;
-    if(bEnableHuskFlamethrower)
-        class'AdvZombieHusk_S'.default.bEnableHuskFlamethrower = true;
-    if(bEnableHuskFlameAndMove)
-        class'AdvZombieHusk_S'.default.bEnableHuskFlameAndMove = true;
+    class'AdvZombieHusk_S'.default.bEnableHuskMoveAndShoot = bEnableHuskMoveAndShoot;
+    class'AdvZombieHusk_S'.default.bEnableHuskFlamethrower = bEnableHuskFlamethrower;
+    class'AdvZombieHusk_S'.default.bEnableHuskFlameAndMove = bEnableHuskFlameAndMove;
 
     //Stalker Configs
-    if(bEnableStalkerDisorientingAttacks)
-        class'AdvZombieStalker_S'.default.bDisorientingAttacks = true;
-    if(bEnableStalkerPiercingAttacks)
-        class'AdvZombieStalker_S'.default.bPiercingAttacks = true;
-    if(bEnableStalkerLeapIfSpotted)
-        class'AdvZombieStalker_S'.default.bLeapIfSpotted = true;
-    if(bEnableStalkerPreservativeDodge)
-        class'AdvZombieStalker_S'.default.bPreservativeDodge = true;
-    if(StalkerStealthLevel == 0)
-        class'AdvZombieStalker_S'.default.StealthLevel = 0;
-    else if(StalkerStealthLevel == 1)
-        class'AdvZombieStalker_S'.default.StealthLevel = 1;
-    else if(StalkerStealthLevel == 2)
-        class'AdvZombieStalker_S'.default.StealthLevel = 2;
-    else if(StalkerStealthLevel == 3)
-        class'AdvZombieStalker_S'.default.StealthLevel = 3;
+    class'AdvZombieStalker_S'.default.bDisorientingAttacks = bDisorientingAttacks;
+    class'AdvZombieStalker_S'.default.bPiercingAttacks     = bPiercingAttacks;
+    class'AdvZombieStalker_S'.default.bLeapIfSpotted       = bLeapIfSpotted;
+    class'AdvZombieStalker_S'.default.bPreservativeDodge   = bPreservativeDodge;
+
+    StalkerStealthLevel = clamp(StalkerStealthLevel, 0, 3);
+    class'AdvZombieStalker_S'.default.StealthLevel = StalkerStealthLevel;
 
     // General Configs
     if(bIgnoreDifficulty)
     {
-        class'AdvZombieStalker_S'.default.bIgnoreDifficulty = true;
-        class'AdvZombieHusk_S'.default.bIgnoreDifficulty = true;
+        class'AdvZombieStalker_S'.default.bIgnoreDifficulty = bIgnoreDifficulty;
+        class'AdvZombieHusk_S'.default.bIgnoreDifficulty    = bIgnoreDifficulty;
     }
 }
 
@@ -130,7 +118,7 @@ static event string GetDescriptionText(string Property)
     case "bIgnoreDifficulty":
         return "All of the zeds special moves are enabled on all difficulties instead of being restricted to higher ones.";
     default:
-      return super(Info).GetDescriptionText(Property);
+      return super.GetDescriptionText(Property);
   }
 }
 

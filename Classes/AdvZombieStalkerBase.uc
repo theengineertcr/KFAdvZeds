@@ -27,30 +27,30 @@ var() float    OffsetTime;
 
 function bool DoPounce()
 {
-	if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking) )
-		return false;
+    if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking) )
+        return false;
 
-	Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
-	Velocity.Z = JumpZ * 1.75;
-	SetPhysics(PHYS_Falling);
-	SetCollision(false, false, false);
-	bPouncing=true;
-	return true;
+    Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
+    Velocity.Z = JumpZ * 1.75;
+    SetPhysics(PHYS_Falling);
+    SetCollision(false, false, false);
+    bPouncing=true;
+    return true;
 }
 
 function PrepareToPounce()
 {
-	Velocity = Normal(Location-Controller.Target.Location)*PounceSpeed*0.7;
-	Velocity.Z = JumpZ * 0.5;
-	SetPhysics(PHYS_Falling);
-	bPouncing=true;
+    Velocity = Normal(Location-Controller.Target.Location)*PounceSpeed*0.7;
+    Velocity.Z = JumpZ * 0.5;
+    SetPhysics(PHYS_Falling);
+    bPouncing=true;
 }
 
 event Landed(vector HitNormal)
 {
-	bPouncing=false;
-	SetCollision(true, true, true);
-	super.Landed(HitNormal);
+    bPouncing=false;
+    SetCollision(true, true, true);
+    super.Landed(HitNormal);
     PlayOwnedSound(GetSound(EST_Land), SLOT_Interact, 0);
 }
 
@@ -59,14 +59,14 @@ defaultproperties
     DrawScale=1.1
     Prepivot=(Z=5.0)
     PounceSpeed=330.000000
-	SoundRadius=80.0
-	SoundVolume=50
-	AmbientSoundScaling=6.83
-	TransientSoundVolume=1.000000
-	GruntVolume=1.500000
-	MoanVolume=1.500000
-	FootstepVolume=1.000000
-	TransientSoundRadius=500.000000
+    SoundRadius=80.0
+    SoundVolume=50
+    AmbientSoundScaling=6.83
+    TransientSoundVolume=1.000000
+    GruntVolume=1.500000
+    MoanVolume=1.500000
+    FootstepVolume=1.000000
+    TransientSoundRadius=500.000000
 
     MeleeAnims(0)="StalkerSpinAttack"
     MeleeAnims(1)="StalkerAttack1"
@@ -115,16 +115,16 @@ defaultproperties
     MenuName="Stalker"
     KFRagdollName="Stalker_Trip"
 
-	SeveredHeadAttachScale=1.0
-	SeveredLegAttachScale=0.7
-	SeveredArmAttachScale=0.8
+    SeveredHeadAttachScale=1.0
+    SeveredLegAttachScale=0.7
+    SeveredArmAttachScale=0.8
 
 
-	MeleeRange=35.000000
-	HeadHeight=2.5
-	HeadScale=1.1
-	CrispUpThreshhold=10
-	OnlineHeadshotOffset=(X=18,Y=0,Z=33)
-	OnlineHeadshotScale=1.2
-	MotionDetectorThreat=0.25
+    MeleeRange=35.000000
+    HeadHeight=2.5
+    HeadScale=1.1
+    CrispUpThreshhold=10
+    OnlineHeadshotOffset=(X=18,Y=0,Z=33)
+    OnlineHeadshotScale=1.2
+    MotionDetectorThreat=0.25
 }

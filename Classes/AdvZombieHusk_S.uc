@@ -35,4 +35,3 @@ defaultproperties
     ChallengeSound(2)=Sound'KF_EnemiesFinalSnd.Husk_Challenge'
     ChallengeSound(3)=Sound'KF_EnemiesFinalSnd.Husk_Challenge'
 }
-
