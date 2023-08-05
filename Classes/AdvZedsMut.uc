@@ -17,10 +17,15 @@ class AdvZedsMut extends Mutator
 
 //Config options
 
-var config bool bEnableHuskMoveAndShoot;    // Allows Husks to shoot and move at the same time
-var config bool bEnableHuskFlamethrower;    // Allows Husks to use their flamethrower attack
-var config bool bEnableHuskFlameAndMove;    // Allows Husks to use their flamethrower and move at the same time
-var config bool bIgnoreDifficulty;          // All special moves are enabled on all difficulties
+var config bool bEnableHuskMoveAndShoot;                // Allows Husks to shoot and move at the same time
+var config bool bEnableHuskFlamethrower;                // Allows Husks to use their flamethrower attack
+var config bool bEnableHuskFlameAndMove;                // Allows Husks to use their flamethrower and move at the same time
+var config bool bEnableStalkerDisorientingAttacks;      // Allows Stalkers to shake the targets view, causing them to be disoriented
+var config bool bEnableStalkerPiercingAttacks;			// Allows Stalkers to pierce through the targets armour when behind them, dealing direct damage to their health
+var config bool bEnableStalkerLeapIfSpotted;			// Allows Stalkers to leap behind their target if they're facing towards them and they're close
+var config bool bEnableStalkerPreservativeDodge;   		// Allows Stalkers to dodge away from danger to preserve their own life
+var config int StalkerStealthLevel;				        // Stalkers Stealth Level. Affects both sounds and texture
+var config bool bIgnoreDifficulty;                      // All special abilities are enabled on all difficulties based on the user's settings
 
 
 //=======================================
@@ -42,6 +47,8 @@ event PostBeginPlay()
         return;
     }
 
+    if (KF.MonsterCollection.default.MonsterClasses[3].MClassName != "")
+        KF.MonsterCollection.default.MonsterClasses[3].MClassName = string(class'AdvZombieStalker_S');
     if (KF.MonsterCollection.default.MonsterClasses[8].MClassName != "")
         KF.MonsterCollection.default.MonsterClasses[8].MClassName = string(class'AdvZombieHusk_S');
 
@@ -53,9 +60,30 @@ event PostBeginPlay()
     if(bEnableHuskFlameAndMove)
         class'AdvZombieHusk_S'.default.bEnableHuskFlameAndMove = true;
 
+    //Stalker Configs
+    if(bEnableStalkerDisorientingAttacks)
+        class'AdvZombieStalker_S'.default.bDisorientingAttacks = true;
+    if(bEnableStalkerPiercingAttacks)
+        class'AdvZombieStalker_S'.default.bPiercingAttacks = true;
+    if(bEnableStalkerLeapIfSpotted)
+        class'AdvZombieStalker_S'.default.bLeapIfSpotted = true;
+    if(bEnableStalkerPreservativeDodge)
+        class'AdvZombieStalker_S'.default.bPreservativeDodge = true;
+    if(StalkerStealthLevel == 0)
+        class'AdvZombieStalker_S'.default.StealthLevel = 0;
+    else if(StalkerStealthLevel == 1)
+        class'AdvZombieStalker_S'.default.StealthLevel = 1;
+    else if(StalkerStealthLevel == 2)
+        class'AdvZombieStalker_S'.default.StealthLevel = 2;
+    else if(StalkerStealthLevel == 3)
+        class'AdvZombieStalker_S'.default.StealthLevel = 3;
+
     // General Configs
     if(bIgnoreDifficulty)
+    {
+        class'AdvZombieStalker_S'.default.bIgnoreDifficulty = true;
         class'AdvZombieHusk_S'.default.bIgnoreDifficulty = true;
+    }
 }
 
 
@@ -70,6 +98,11 @@ static function FillPlayInfo(PlayInfo PlayInfo)
     PlayInfo.AddSetting(default.FriendlyName, "bEnableHuskMoveAndShoot", "Husk: Move and Shoot", 0, 0, "Check",,,,false);
     PlayInfo.AddSetting(default.FriendlyName, "bEnableHuskFlamethrower", "Husk: Flamethrower", 0, 0, "Check",,,,false);
     PlayInfo.AddSetting(default.FriendlyName, "bEnableHuskFlameAndMove", "Husk: Flamethrower and Move", 0, 0, "Check",,,,false);
+    PlayInfo.AddSetting(default.FriendlyName, "bEnableStalkerDisorientingAttacks", "Stalker: Disorienting Attack", 0, 0, "Check",,,,false);
+    PlayInfo.AddSetting(default.FriendlyName, "bEnableStalkerPiercingAttacks", "Stalker: Piercing Attack", 0, 0, "Check",,,,false);
+    PlayInfo.AddSetting(default.FriendlyName, "bEnableStalkerLeapIfSpotted", "Stalker: Leap Behind Target", 0, 0, "Check",,,,false);
+    PlayInfo.AddSetting(default.FriendlyName, "bEnableStalkerPreservativeDodge", "Stalker: Preservative Dodge", 0, 0, "Check",,,,false);
+    PlayInfo.AddSetting(default.FriendlyName, "StalkerStealthLevel", "Stalker: Stealth Level", 0, 0, "Text","1;0:3",,,false);
     PlayInfo.AddSetting(default.FriendlyName, "bIgnoreDifficulty", "General: Ignore Difficulty", 0, 0, "Check",,,,false);
 }
 
@@ -81,9 +114,19 @@ static event string GetDescriptionText(string Property)
     case "bEnableHuskMoveAndShoot":
       return "Allows Husks to have a chance to move and shoot their Husk Cannon.";
     case "bEnableHuskFlamethrower":
-      return "Allows Husks to have a chance to use their Flamethrower attack on close players.";
+      return "Allows Husks to use their Flamethrower attack on close players.";
     case "bEnableHuskFlameAndMove":
         return "Allows Husks to have a chance to move while using their Flamethrower attack.";
+    case "bEnableStalkerDisorientingAttacks":
+        return "Allows Stalkers to disorient the player's view with a strike if they're not exhausted from leaping. Backstabs always disorient the player's view.";
+    case "bEnableStalkerPiercingAttacks":
+        return "Allows Stalkers to deal damage to a players health through armour on a backstab.";
+    case "bEnableStalkerLeapIfSpotted":
+        return "Allows Stalkers to leap behind their target if the target is looking in her direction.";
+    case "bEnableStalkerPreservativeDodge":
+        return "Allows Stalkers to dodge out of the way of grenades and from any zeds that have died next to her.";
+    case "StalkerStealthLevel":
+        return "How difficult it is to hear or see a Stalker.";
     case "bIgnoreDifficulty":
         return "All of the zeds special moves are enabled on all difficulties instead of being restricted to higher ones.";
     default:
@@ -109,5 +152,10 @@ defaultproperties
     bEnableHuskMoveAndShoot=true
     bEnableHuskFlamethrower=true
     bEnableHuskFlameAndMove=true
+    bEnableStalkerDisorientingAttacks=true
+    bEnableStalkerLeapIfSpotted=true
+    bEnableStalkerPiercingAttacks=true
+    bEnableStalkerPreservativeDodge=true
+    StalkerStealthLevel=0
     bIgnoreDifficulty=false
 }

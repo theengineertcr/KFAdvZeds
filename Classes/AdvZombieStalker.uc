@@ -17,59 +17,82 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 #exec OBJ LOAD FILE=KF_BaseStalker.uax
 
 
+// TODO: Figure out a way to only disable Stalker's collision with
+// Other zeds and players, otherwise they're invincible while they-
+// -'re Leaping around
+
 //----------------------------------------------------------------------------
 // NOTE: All Variables are declared in the base class to eliminate hitching
 //----------------------------------------------------------------------------
 
-// Variables
-// TODO: Implement configs into mut class & assign each ability to a difficulty level
-var bool bDisorientingAttacks;  // Shake the targets view, causing them to be disoriented.
-var bool bPiercingAttacks;		// Pierce through the targets armour, dealing damage to their health.
-var bool bLeapIfSpotted;		// Leap behind your target if they're facing towards you and you're close.
-var bool bPreservativeDodge;   	// Dodge away from danger to preserve your life(nearby zed dies, grenade/medic smoke, taking damage).
-var bool bSpeedboostAfterAttack;// Gain a % increase in movement and dodge speed after striking their target.
-var float  SoundLevelMultiplier;// Multiplier that's used to reduce the volume of her sounds.
+// Variables(Config)
+var bool bDisorientingAttacks;  						// Shake the targets view, causing them to be disoriented. Config bool.
+var bool bPiercingAttacks;								// Pierce through the targets armour, dealing damage to their health. Config bool.
+var bool bLeapIfSpotted;								// Leap behind your target if they're facing towards you and you're close. Config bool.
+var bool bPreservativeDodge;   							// Dodge away from danger to preserve your life(nearby zed dies, grenades, taking damage). Config bool.
+var int StealthLevel;									// Stealth Level config. Affects both sounds and texture.
+var bool bIgnoreDifficulty;								// Ignores difficulty and checks users preferences.
+var bool bDisableLeap;									// Used to temporarily disable the ability to leap if there are any nearby Stalkers.
 
+// Variables
+var float  VoiceLevelDivider;							// Divider that's used to reduce the volume of her sounds.
+var float  StepLevelDivider;							// Divider that's used to reduce the volume of her footsteps.
+var vector DodgeSpot;									// What spot she's trying to dodge. Used to calculate to check whether she wants to dodge towards it, or away from it.
+var float JumpHeightMultiplier, JumpSpeedMultiplier; 	// Multipliers used to dynamically change the Jump Height/Speed depending on what she's trying to dodge.
+var float LastDodgeTime;								// Last time she used her presevative dodge.
 
 simulated function PostBeginPlay()
 {
     // Difficulty Scaling for her stealthiness
     if (Level.Game != none && !bDiffAdjusted)
     {
-        if( Level.Game.GameDifficulty < 2.0 )
+        if( (Level.Game.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
         {
-            SoundLevelMultiplier = 1;
+            VoiceLevelDivider = 1;
+			StepLevelDivider  = 1;
 			Skins[0] = Shader'KF_Specimens_Trip_T.stalker_invisible';
 			Skins[1] = Shader'KF_Specimens_Trip_T.stalker_invisible';
         }
-        else if( Level.Game.GameDifficulty < 4.0 )
+        else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
-            SoundLevelMultiplier = 0.10;
+            VoiceLevelDivider = 3;
+            StepLevelDivider = 8;
 			Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
 			Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
         }
-        else if( Level.Game.GameDifficulty < 5.0 )
+        else if( (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
         {
-            SoundLevelMultiplier = 0.07;
+            VoiceLevelDivider = 8;
+            StepLevelDivider = 12;
 			Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
 			Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
         }
-        else // Hardest difficulty
+        else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
         {
-            SoundLevelMultiplier = 0.05;
+            VoiceLevelDivider = 20;
+            StepLevelDivider = 20;
 			Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
 			Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
         }
     }
-	SoundRadius *=(SoundLevelMultiplier);
-    SoundVolume *= (SoundLevelMultiplier);
-	MoanVolume *= (SoundLevelMultiplier - 0.05);
-	GruntVolume *= (SoundLevelMultiplier - 0.05);
-    TransientSoundRadius*= (SoundLevelMultiplier);
-	AmbientSoundScaling *= (SoundLevelMultiplier);
+	SoundRadius = default.SoundRadius / VoiceLevelDivider;
+    SoundVolume = default.SoundVolume /  VoiceLevelDivider;
+	MoanVolume 	= default.MoanVolume / VoiceLevelDivider;
+	GruntVolume = default.GruntVolume / (VoiceLevelDivider);
+    TransientSoundRadius = default.TransientSoundRadius / VoiceLevelDivider;
+	AmbientSoundScaling  = default.AmbientSoundScaling / VoiceLevelDivider;
 
 	CloakStalker();
 	super.PostBeginPlay();
+}
+
+function PlayChallengeSound()
+{
+        if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel <= 1 && bIgnoreDifficulty)
+        {
+			PlaySound(ChallengeSound[Rand(4)],SLOT_Talk,GruntVolume);
+		}
+		else return;
 }
 
 function ClawDamageTarget()
@@ -89,17 +112,18 @@ function ClawDamageTarget()
             HumanTargetController = KFPlayerController(HumanTarget.Controller);
 
 		//If were flanking our target, or were not exhausted from performing a leap attack, our strikes will disorient our foe's view.
-        if( HumanTargetController!=none && (AdvStalkerController(Controller).bFlanking || (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds))
+        if( (HumanTargetController!=none && (AdvStalkerController(Controller).bFlanking || (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds))
+			&& bDisorientingAttacks && (Level.Game.GameDifficulty >= 4.0 || bIgnoreDifficulty))
             HumanTargetController.ShakeView(RotMag, RotRate, RotTime, OffsetMag, OffsetRate, OffsetTime);
 	}
 }
 
 function RangedAttack(Actor A)
 {
-	if((AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds && !AdvStalkerController(Controller).bFlanking && (Physics == PHYS_Walking) && VSize(A.Location-Location)<=100)
+	if((AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds && !AdvStalkerController(Controller).bFlanking && (Physics == PHYS_Walking) &&
+		VSize(A.Location-Location)<=100 && !bDisableLeap && (bLeapIfSpotted && (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty)))
 	{
 		SetAnimAction('DodgeF');
-		Controller.GoToState('WaitForAnim');
 		PrepareToPounce();
 	}
 	else if ( bShotAnim || (Physics != PHYS_Walking))
@@ -116,7 +140,8 @@ function RangedAttack(Actor A)
 
 function bool DoPounce()
 {
-	if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking))
+	if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking) || bDisableLeap ||
+		 !bLeapIfSpotted || bLeapIfSpotted && (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty))
 		return false;
 
 	CloakStalker();
@@ -142,6 +167,20 @@ function PrepareToPounce()
 	bPouncing=true;
 }
 
+function PreservativeDodge()
+{
+	if ( bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking) || LastDodgeTime + 8 > Level.TimeSeconds
+		|| !bPreservativeDodge || bPreservativeDodge && (Level.Game.GameDifficulty < 5.0 && !bIgnoreDifficulty))
+		return;
+
+	LastDodgeTime = Level.TimeSeconds;
+	Velocity = Normal(DodgeSpot)*PounceSpeed*JumpSpeedMultiplier;
+	Velocity.Z = JumpZ * JumpHeightMultiplier;
+	SetCollision(false, false, false);
+	SetPhysics(PHYS_Falling);
+	bPouncing=true;
+}
+
 event Landed(vector HitNormal)
 {
 	bPouncing=false;
@@ -159,9 +198,8 @@ simulated function BeginPlay()
 // Footsteps are linked to Anim-notifies
 simulated function StalkerFootstep()
 {
-	PlaySound(sound'KF_EnemiesFinalSnd.Stalker.Stalker_StepDefault', SLOT_None, FootstepVolume * (SoundLevelMultiplier));
+	PlaySound(sound'KF_EnemiesFinalSnd.Stalker.Stalker_StepDefault', SLOT_None, FootstepVolume / StepLevelDivider);
 }
-
 
 simulated function PostNetBeginPlay()
 {
@@ -192,7 +230,40 @@ simulated event SetAnimAction(name NewAction)
 
 simulated function Tick(float DeltaTime)
 {
+	local AdvZombieStalker Stalker;
+	local KFMonster Monster;
+	local Nade Grenade;
+	local float LeapCheckTime;
 	Super.Tick(DeltaTime);
+
+	foreach CollidingActors(class'Nade', Grenade, 150, Location)
+	{
+		JumpHeightMultiplier= 1.25;
+		JumpSpeedMultiplier = 0.75;
+		DodgeSpot = Grenade.Location - Location + Controller.Target.Location;
+		PreservativeDodge();
+	}
+
+	foreach CollidingActors(class'KFMonster', Monster, 300, Location)
+	{
+		JumpHeightMultiplier = 0.5;
+		JumpSpeedMultiplier = 1.5;
+		DodgeSpot = Location - Monster.Location;
+		if (Monster.bPlayedDeath && Monster != Self)
+			PreservativeDodge();
+	}
+
+	foreach CollidingActors(class'AdvZombieStalker', Stalker, 300, Location)
+	{
+		if (Stalker != Self && !Stalker.bPlayedDeath)
+		{
+			bDisableLeap = true;
+			LeapCheckTime = Level.TimeSeconds;
+		}
+	}
+
+	if(Level.TimeSeconds > LeapCheckTime && bDisableLeap != false)
+		bDisableLeap = false;
 
 
 	if( Level.NetMode==NM_DedicatedServer )
@@ -206,7 +277,6 @@ simulated function Tick(float DeltaTime)
 	else if( Level.TimeSeconds > NextCheckTime && Health > 0 )
 	{
 		NextCheckTime = Level.TimeSeconds + 0.5;
-
         if( LocalKFHumanPawn != none && LocalKFHumanPawn.Health > 0 && LocalKFHumanPawn.ShowStalkers() &&
             VSizeSquared(Location - LocalKFHumanPawn.Location) < LocalKFHumanPawn.GetStalkerViewDistanceMulti() * 640000.0 ) // 640000 = 800 Units
         {
@@ -243,11 +313,11 @@ simulated function Tick(float DeltaTime)
 		}
 	}
 	// If were behind our target, our attacks pierce through their armour
-	if(AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeStalkerAPClaws')
+	if(AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeStalkerAPClaws' && bPiercingAttacks && (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty))
 	{
-			ZombieDamType[0]=Class'DamTypeStalkerAPClaws';
-			ZombieDamType[1]=Class'DamTypeStalkerAPClaws';
-			ZombieDamType[2]=Class'DamTypeStalkerAPClaws';
+		ZombieDamType[0]=Class'DamTypeStalkerAPClaws';
+		ZombieDamType[1]=Class'DamTypeStalkerAPClaws';
+		ZombieDamType[2]=Class'DamTypeStalkerAPClaws';
 	}
 	else if(!AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeSlashingAttack')
 	{
@@ -286,22 +356,22 @@ simulated function CloakStalker()
 		if( Level.NetMode == NM_DedicatedServer )
 			Return;
 
-		if(Level.Game.GameDifficulty < 2.0)
+		if((Level.Game.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
 		{
 			Skins[0] = Shader'KF_Specimens_Trip_T.stalker_invisible';
 			Skins[1] = Shader'KF_Specimens_Trip_T.stalker_invisible';
 		}
-        else if( Level.Game.GameDifficulty < 4.0 )
+        else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
 			Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
 			Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
         }
-        else if( Level.Game.GameDifficulty < 5.0 )
+        else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
         {
 			Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
 			Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
         }
-        else // Hardest difficulty
+        else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
         {
 			Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
 			Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
@@ -338,7 +408,7 @@ simulated function UnCloakStalker()
 		// 25% chance of our Enemy saying something about us being invisible
 		// Doesn't work past normal difficulty
 		if( Level.NetMode!=NM_Client && !KFGameType(Level.Game).bDidStalkerInvisibleMessage && FRand()<0.25 && Controller.Enemy!=none &&
-		 PlayerController(Controller.Enemy.Controller)!=none  && Level.Game.GameDifficulty < 2.0)
+		 PlayerController(Controller.Enemy.Controller)!=none  && Level.Game.GameDifficulty <= 2.0)
 		{
 			PlayerController(Controller.Enemy.Controller).Speech('AUTO', 17, "");
 			KFGameType(Level.Game).bDidStalkerInvisibleMessage = true;
