@@ -13,10 +13,11 @@ Husks:
 Stalker:
 
 - Harder to see and hear on higher difficulties
+- Dodges grenades, and leaps out of seemingly dangerous situations
 - Leaps behind her targets if spotted.
 - If spotted in the middle of an attack animation, cancels with a backstep before leaping.
 - Armour piercing attacks on backstab.
-- Heavy camera shakes on backstab.
+- Heavy camera shakes on backstab(or from the front if she's not exhausted from leaping).
   
 ## Installation
 
