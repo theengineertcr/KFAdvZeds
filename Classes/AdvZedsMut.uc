@@ -47,6 +47,10 @@ event PostBeginPlay()
         return;
     }
 
+    if (KF.MonsterCollection == class'KFGameType'.default.MonsterCollection) {
+        KF.MonsterCollection = class'AdvZedsMCollection';
+    }
+
     if (KF.MonsterCollection.default.MonsterClasses[3].MClassName != "")
         KF.MonsterCollection.default.MonsterClasses[3].MClassName = string(class'AdvZombieStalker_S');
     if (KF.MonsterCollection.default.MonsterClasses[8].MClassName != "")
