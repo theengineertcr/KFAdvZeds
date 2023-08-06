@@ -9,14 +9,18 @@
 class AdvZedsMut extends Mutator
     config(KFAdvZeds);
 
-
 // Load all relevant packages
 #exec OBJ LOAD FILE=KFAdvZeds_A.ukx
 #exec OBJ LOAD FILE=AdvZeds_SND.uax
 
+// Array that stores all the replacement pairs
+var array<struct oldNewZombiePair {
+    var string oldClass;
+    var string newClass;
+}> replacementArray;
+var array<string> replCaps;
 
-//Config options
-
+// Config options
 var config bool bEnableHuskMoveAndShoot;                // Allows Husks to shoot and move at the same time
 var config bool bEnableHuskFlamethrower;                // Allows Husks to use their flamethrower attack
 var config bool bEnableHuskFlameAndMove;                // Allows Husks to use their flamethrower and move at the same time
@@ -27,7 +31,6 @@ var config bool bEnableStalkerPreservativeDodge;           // Allows Stalkers to
 var config int StalkerStealthLevel;                        // Stalkers Stealth Level. Affects both sounds and texture
 var config bool bIgnoreDifficulty;                      // All special abilities are enabled on all difficulties based on the user's settings
 
-
 //=======================================
 //          PostBeginPlay
 //=======================================
@@ -35,6 +38,8 @@ var config bool bIgnoreDifficulty;                      // All special abilities
 event PostBeginPlay()
 {
     local KFGameType KF;
+    local array<string> mcCaps;
+    local int i, k;
 
     super.PostBeginPlay();
 
@@ -51,10 +56,40 @@ event PostBeginPlay()
         KF.MonsterCollection = class'AdvZedsMCollection';
     }
 
-    if (KF.MonsterCollection.default.MonsterClasses[3].MClassName != "")
-        KF.MonsterCollection.default.MonsterClasses[3].MClassName = string(class'AdvZombieStalker_S');
-    if (KF.MonsterCollection.default.MonsterClasses[8].MClassName != "")
-        KF.MonsterCollection.default.MonsterClasses[8].MClassName = string(class'AdvZombieHusk_S');
+    for (i= 0; i < KF.MonsterCollection.default.MonsterClasses.Length; i++) {
+        mcCaps[mcCaps.Length] = Caps(KF.MonsterCollection.default.MonsterClasses[i].MClassName);
+    }
+    for (i= 0; i < replacementArray.Length; i++) {
+        replCaps[replCaps.Length] = Caps(replacementArray[i].oldClass);
+    }
+    // Replace all instances of the old specimens with the new ones
+    for (i= 0; i < mcCaps.Length; i++) {
+        for (k= 0; k < replCaps.Length; k++) {
+            if (InStr(mcCaps[i], replCaps[k]) != -1) {
+                log(
+                    "KFAdvZeds - Replacing" @
+                    KF.MonsterCollection.default.MonsterClasses[i].MClassName @
+                    "with" @
+                    replacementArray[k].newClass
+                );
+                KF.MonsterCollection.default.MonsterClasses[i].MClassName =
+                    replacementArray[k].newClass;
+            }
+        }
+    }
+
+    // Replace the special squad arrays
+    replaceSpecialSquad(KF.MonsterCollection.default.ShortSpecialSquads);
+    replaceSpecialSquad(KF.MonsterCollection.default.NormalSpecialSquads);
+    replaceSpecialSquad(KF.MonsterCollection.default.LongSpecialSquads);
+    replaceSpecialSquad(KF.MonsterCollection.default.FinalSquads);
+
+    // KF.MonsterCollection.default.EndGameBossClass = PLACEHOLDER;
+    KF.MonsterCollection.default.FallbackMonsterClass = string(class'AdvZombieStalker_S');
+
+    for(i= 0; i < KF.SpecialEventMonsterCollections.Length; i++) {
+        KF.SpecialEventMonsterCollections[i] = KF.MonsterCollection;
+    }
 
     //Husk Configs
     class'AdvZombieHusk_S'.default.bEnableHuskMoveAndShoot = bEnableHuskMoveAndShoot;
@@ -78,6 +113,20 @@ event PostBeginPlay()
     }
 }
 
+// Replaces the zombies in the given squadArray
+function replaceSpecialSquad(out array<KFMonstersCollection.SpecialSquad> squadArray) {
+    local int i,j,k;
+
+    for(j=0; j<squadArray.Length; j++) {
+        for(i=0;i<squadArray[j].ZedClass.Length; i++) {
+            for(k=0; k<replacementArray.Length; k++) {
+                if(InStr(Caps(squadArray[j].ZedClass[i]), replCaps[k]) != -1) {
+                    squadArray[j].ZedClass[i]=  replacementArray[k].newClass;
+                }
+            }
+        }
+    }
+}
 
 //=======================================
 //          Mutator Info
@@ -140,6 +189,9 @@ defaultproperties
     bAlwaysRelevant=true
     RemoteRole=ROLE_SimulatedProxy
     bAddToServerPackages=true
+
+    replacementArray(0)=(oldClass="KFChar.ZombieHusk",newClass="KFAdvZeds.AdvZombieHusk_S")
+    replacementArray(1)=(oldClass="KFChar.ZombieStalker",newClass="KFAdvZeds.AdvZombieStalker_S")
 
     bEnableHuskMoveAndShoot=true
     bEnableHuskFlamethrower=true
