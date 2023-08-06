@@ -149,8 +149,7 @@ function bool DoPounce()
     Velocity.Z = JumpZ * 1.75;
     SetPhysics(PHYS_Falling);
     SetCollision(false, false, false);
-    SetAnimAction('HitB');
-    Controller.GoToState('WaitForAnim');
+    SetAnimAction('HitReactionB');
     bPouncing=true;
     return true;
 }
