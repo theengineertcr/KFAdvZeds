@@ -38,21 +38,7 @@ var() float    RotTime;
 var() vector OffsetMag;
 var() vector OffsetRate;
 var() float    OffsetTime;
-var Material RepSkinHair;
 var float FootstepVolume;
-
-replication
-{
-	unreliable if ( (!bSkipActorPropertyReplication || bNetInitial) && (Role==ROLE_Authority) && bNetDirty )
-		RepSkinHair, FootStepRadius, FootstepVolume;
-}
-
-event PostNetReceive() {
-    if (Role != ROLE_Authority) {
-        Skins[1]=RepSkin;
-        Skins[0]=RepSkinHair;
-    }
-}
 
 function bool DoPounce()
 {
