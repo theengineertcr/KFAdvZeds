@@ -36,14 +36,12 @@ simulated function PostBeginPlay()
     // Difficulty Scaling for her stealthiness
     if (Level.Game != none && !bDiffAdjusted)
     {
+        Skins[0] = GetCloakSkin();
+        Skins[1] = GetCloakSkin();
         if( (Level.Game.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
         {
             FootstepVolume = 1.0;
             FootstepRadius = 25;
-            RepSkin = Shader'KF_Specimens_Trip_T.stalker_invisible';
-            RepSkinHair = Shader'KF_Specimens_Trip_T.stalker_invisible';
-            Skins[0] = Shader'KF_Specimens_Trip_T.stalker_invisible';
-            Skins[1] = Shader'KF_Specimens_Trip_T.stalker_invisible';
         }
         else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
@@ -55,10 +53,6 @@ simulated function PostBeginPlay()
             GruntVolume = 0.75;
             TransientSoundRadius = 250;
             AmbientSoundScaling  = 3.4;
-            RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-            RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
         }
         else if( (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
         {
@@ -70,10 +64,6 @@ simulated function PostBeginPlay()
             GruntVolume = 0.375;
             TransientSoundRadius = 125;
             AmbientSoundScaling  = 1.7;
-            RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-            RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
         }
         else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
         {
@@ -85,10 +75,6 @@ simulated function PostBeginPlay()
             GruntVolume = 0.150;
             TransientSoundRadius = 50;
             AmbientSoundScaling  = 1.0;
-            RepSkin = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-            RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
         }
     }
 
@@ -241,42 +227,46 @@ simulated function Tick(float DeltaTime)
     local KFMonster Monster;
     local Nade Grenade;
     local float LeapCheckTime;
-    Super.Tick(DeltaTime);
+    Super(ZombieStalkerBase).Tick(DeltaTime);
 
-    if (Controller == none || IsInState('ZombieDying'))
-        return;
-
-    foreach CollidingActors(class'Nade', Grenade, 150, Location)
+    if (Controller != none && !IsInState('ZombieDying'))
     {
-        JumpHeightMultiplier= 1.25;
-        JumpSpeedMultiplier = 0.75;
-        if (Controller == none || IsInState('ZombieDying') || IsInState('GettingOutOfTheWayOfShot'))
-            return;
-        else
-        DodgeSpot = Grenade.Location - Location + Controller.Target.Location;
-        PreservativeDodge();
-    }
 
-    foreach CollidingActors(class'KFMonster', Monster, 300, Location)
-    {
-        JumpHeightMultiplier = 0.5;
-        JumpSpeedMultiplier = 1.5;
-        DodgeSpot = Location - Monster.Location;
-        if (Monster.bPlayedDeath && Monster != Self)
-            PreservativeDodge();
-    }
-
-    foreach CollidingActors(class'AdvZombieStalker', Stalker, 300, Location)
-    {
-        if (Stalker != Self && !Stalker.bPlayedDeath)
+        foreach CollidingActors(class'Nade', Grenade, 150, Location)
         {
-            bDisableLeap = true;
-            LeapCheckTime = Level.TimeSeconds;
+            JumpHeightMultiplier= 1.25;
+            JumpSpeedMultiplier = 0.75;
+            if (Controller == none || IsInState('ZombieDying') || IsInState('GettingOutOfTheWayOfShot'))
+                break;
+            else
+            DodgeSpot = Grenade.Location - Location + Controller.Target.Location;
+            PreservativeDodge();
         }
+
+        foreach CollidingActors(class'KFMonster', Monster, 300, Location)
+        {
+            JumpHeightMultiplier = 0.5;
+            JumpSpeedMultiplier = 1.5;
+            DodgeSpot = Location - Monster.Location;
+            if (Monster.bPlayedDeath && Monster != Self)
+                PreservativeDodge();
+        }
+
+        foreach CollidingActors(class'AdvZombieStalker', Stalker, 300, Location)
+        {
+            if (Stalker != Self && !Stalker.bPlayedDeath)
+            {
+                bDisableLeap = true;
+                LeapCheckTime = Level.TimeSeconds;
+            }
+        }
+
+        if(Level.TimeSeconds > LeapCheckTime && bDisableLeap != false)
+            bDisableLeap = false;
     }
 
-    if(Level.TimeSeconds > LeapCheckTime && bDisableLeap != false)
-        bDisableLeap = false;
+    if( Level.NetMode==NM_DedicatedServer )
+		Return; // Servers aren't intrested in this info.
 
     if( bZapped )
     {
@@ -296,19 +286,19 @@ simulated function Tick(float DeltaTime)
             bSpotted = false;
         }
 
-        if ( !bSpotted && !bCloaked && RepSkin != Combiner'KF_Specimens_Trip_T.stalker_cmb' )
+        if ( !bSpotted && !bCloaked && Skins[0] != Combiner'KF_Specimens_Trip_T.stalker_cmb' )
         {
             UncloakStalker();
         }
         else if ( Level.TimeSeconds - LastUncloakTime > 1.2 )
         {
             // if we're uberbrite, turn down the light
-            if( bSpotted && RepSkin != Finalblend'KFX.StalkerGlow' )
+            if( bSpotted && Skins[0] != Finalblend'KFX.StalkerGlow' )
             {
                 bUnlit = false;
                 CloakStalker();
             }
-            else if ( RepSkin != Shader'KF_Specimens_Trip_T.stalker_invisible')
+            else if ( !IsCloakSkin(Skins[0]) )
             {
                 CloakStalker();
             }
@@ -336,74 +326,78 @@ simulated function Tick(float DeltaTime)
     }
 }
 
+simulated function bool IsCloakSkin(Material toCheck) {
+    if (toCheck == Shader'KF_Specimens_Trip_T.stalker_invisible') return true;
+    if (toCheck == ColorModifier'KFAdvZeds_T.Stalker_Hard') return true;
+    if (toCheck == ColorModifier'KFAdvZeds_T.Stalker_Sui') return true;
+    if (toCheck == ColorModifier'KFAdvZeds_T.Stalker_HOE') return true;
+
+    return false;
+}
+
+simulated function Material GetCloakSkin() {
+    if(default.StealthLevel == 0)
+    {
+        return Shader'KF_Specimens_Trip_T.stalker_invisible';
+    }
+    else if(default.StealthLevel == 1)
+    {
+        return ColorModifier'KFAdvZeds_T.Stalker_Hard';
+    }
+    else if(default.StealthLevel == 2)
+    {
+        return ColorModifier'KFAdvZeds_T.Stalker_Sui';
+    }
+    else if(default.StealthLevel == 3)
+    {
+        return ColorModifier'KFAdvZeds_T.Stalker_HOE';
+    }
+    return Shader'KF_Specimens_Trip_T.stalker_invisible';
+}
+
 // Cloak Functions ( called from animation notifies to save Gibby trouble ;) )
 
 simulated function CloakStalker()
 {
-    if ( bSpotted && !bZapped && !bDecapitated && !bCrispified)
-    {
-
-        RepSkin = Finalblend'KFX.StalkerGlow';
-        RepSkinHair = Finalblend'KFX.StalkerGlow';
-        Skins[0] = Finalblend'KFX.StalkerGlow';
-        Skins[1] = Finalblend'KFX.StalkerGlow';
-        bUnlit = true;
-        return;
-    }
-
     // No cloaking if zapped
-    if( bZapped || bCloaked)
+    if( bZapped )
     {
         return;
     }
 
-    if ( !bDecapitated && !bCrispified ) // No head, no cloak, honey.  updated :  Being charred means no cloak either :D
-    {
-        Visibility = 1;
-        bCloaked = true;
+	if ( bSpotted )
+	{
+		if( Level.NetMode == NM_DedicatedServer )
+			return;
 
-        if((Level.Game.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
-        {
-            RepSkin = Shader'KF_Specimens_Trip_T.stalker_invisible';
-            RepSkinHair = Shader'KF_Specimens_Trip_T.stalker_invisible';
-            Skins[0] = Shader'KF_Specimens_Trip_T.stalker_invisible';
-            Skins[1] = Shader'KF_Specimens_Trip_T.stalker_invisible';
-        }
-        else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
-        {
-            RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-            RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
-        }
-        else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
-        {
-            RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-            RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
-        }
-        else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
-        {
-            RepSkin = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-            RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
-        }
-        // Invisible - no shadow
-        if(PlayerShadow != none)
-            PlayerShadow.bShadowActive = false;
-        if(RealTimeShadow != none)
-            RealTimeShadow.Destroy();
+		Skins[0] = Finalblend'KFX.StalkerGlow';
+		Skins[1] = Finalblend'KFX.StalkerGlow';
+		bUnlit = true;
+		return;
+	}
 
-        // Remove/disallow projectors on invisible people
-        Projectors.Remove(0, Projectors.Length);
-        bAcceptsProjectors = false;
-        if(Level.Game.GameDifficulty <= 4.0)
-            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
-        else
-            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
-    }
+	if ( !bDecapitated && !bCrispified ) // No head, no cloak, honey.  updated :  Being charred means no cloak either :D
+	{
+		Visibility = 1;
+		bCloaked = true;
+
+		if( Level.NetMode == NM_DedicatedServer )
+			Return;
+
+		Skins[0] = GetCloakSkin();
+		Skins[1] = GetCloakSkin();
+
+		// Invisible - no shadow
+		if(PlayerShadow != none)
+			PlayerShadow.bShadowActive = false;
+		if(RealTimeShadow != none)
+			RealTimeShadow.Destroy();
+
+		// Remove/disallow projectors on invisible people
+		Projectors.Remove(0, Projectors.Length);
+		bAcceptsProjectors = false;
+		SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+	}
 }
 
 simulated function UnCloakStalker()
@@ -413,40 +407,37 @@ simulated function UnCloakStalker()
         return;
     }
 
-    if( !bCrispified )
-    {
-        LastUncloakTime = Level.TimeSeconds;
+	if( !bCrispified )
+	{
+		LastUncloakTime = Level.TimeSeconds;
 
-        Visibility = default.Visibility;
-        bCloaked = false;
-        bUnlit = false;
+		Visibility = default.Visibility;
+		bCloaked = false;
+		bUnlit = false;
 
-        // 25% chance of our Enemy saying something about us being invisible
-        // Doesn't work past normal difficulty
-        if( Level.NetMode!=NM_Client && !KFGameType(Level.Game).bDidStalkerInvisibleMessage && FRand()<0.25 && Controller.Enemy!=none &&
-         PlayerController(Controller.Enemy.Controller)!=none  && Level.Game.GameDifficulty <= 2.0)
-        {
-            PlayerController(Controller.Enemy.Controller).Speech('AUTO', 17, "");
-            KFGameType(Level.Game).bDidStalkerInvisibleMessage = true;
-        }
+		// 25% chance of our Enemy saying something about us being invisible
+		if( Level.NetMode!=NM_Client && !KFGameType(Level.Game).bDidStalkerInvisibleMessage && FRand()<0.25 && Controller.Enemy!=none &&
+		 PlayerController(Controller.Enemy.Controller)!=none )
+		{
+			PlayerController(Controller.Enemy.Controller).Speech('AUTO', 17, "");
+			KFGameType(Level.Game).bDidStalkerInvisibleMessage = true;
+		}
+		if( Level.NetMode == NM_DedicatedServer )
+			Return;
 
-        if ( RepSkin != Combiner'KF_Specimens_Trip_T.stalker_cmb' )
-        {
-            RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
-            RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
-            Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
-            Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
-            if (PlayerShadow != none)
-                PlayerShadow.bShadowActive = true;
+		if ( Skins[0] != Combiner'KF_Specimens_Trip_T.stalker_cmb' )
+		{
+			Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
+			Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
 
-            bAcceptsProjectors = true;
+			if (PlayerShadow != none)
+				PlayerShadow.bShadowActive = true;
 
-            if(Level.Game.GameDifficulty <= 4.0)
-                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
-            else
-                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
-        }
-    }
+			bAcceptsProjectors = true;
+
+			SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+		}
+	}
 }
 
 // Set the zed to the zapped behavior
@@ -457,8 +448,6 @@ simulated function SetZappedBehavior()
     bUnlit = false;
 
     // Handle setting the zed to uncloaked so the zapped overlay works properly
-    RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
-    RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
     Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
     Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
 
@@ -511,8 +500,6 @@ function RemoveHead()
 
     if (!bCrispified)
     {
-        RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
-        RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
         Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
         Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
     }
@@ -529,8 +516,6 @@ simulated function PlayDying(class<DamageType> DamageType, vector HitLoc)
 
     if (!bCrispified)
     {
-        RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
-        RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
         Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
         Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
     }

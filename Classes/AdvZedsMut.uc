@@ -20,6 +20,9 @@ var array<struct oldNewZombiePair {
 }> replacementArray;
 var array<string> replCaps;
 
+// Replicated data
+var int RepStalkerStealthLevel;
+
 // Config options
 var config bool bEnableHuskMoveAndShoot;                // Allows Husks to shoot and move at the same time
 var config bool bEnableHuskFlamethrower;                // Allows Husks to use their flamethrower attack
@@ -30,6 +33,17 @@ var config bool bEnableStalkerLeapIfSpotted;            // Allows Stalkers to le
 var config bool bEnableStalkerPreservativeDodge;           // Allows Stalkers to dodge away from danger to preserve their own life
 var config int StalkerStealthLevel;                        // Stalkers Stealth Level. Affects both sounds and texture
 var config bool bIgnoreDifficulty;                      // All special abilities are enabled on all difficulties based on the user's settings
+
+replication
+{
+	reliable if (Role == ROLE_Authority)
+		RepStalkerStealthLevel;
+}
+
+simulated function PostNetBeginPlay() {
+    RepStalkerStealthLevel = clamp(RepStalkerStealthLevel, 0, 3);
+    class'AdvZombieStalker_S'.default.StealthLevel = RepStalkerStealthLevel;
+}
 
 //=======================================
 //          PostBeginPlay
@@ -101,9 +115,22 @@ event PostBeginPlay()
     class'AdvZombieStalker_S'.default.bPiercingAttacks     = bEnableStalkerPiercingAttacks;
     class'AdvZombieStalker_S'.default.bLeapIfSpotted       = bEnableStalkerLeapIfSpotted;
     class'AdvZombieStalker_S'.default.bPreservativeDodge   = bEnableStalkerPreservativeDodge;
-
-    StalkerStealthLevel = clamp(StalkerStealthLevel, 0, 3);
-    class'AdvZombieStalker_S'.default.StealthLevel = StalkerStealthLevel;
+    if((KF.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StalkerStealthLevel == 0 && bIgnoreDifficulty)
+    {
+        RepStalkerStealthLevel = 0;
+    }
+    else if( (KF.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StalkerStealthLevel == 1 && bIgnoreDifficulty)
+    {
+        RepStalkerStealthLevel = 1;
+    }
+    else if((KF.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StalkerStealthLevel == 2 && bIgnoreDifficulty)
+    {
+        RepStalkerStealthLevel = 2;
+    }
+    else if( (KF.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StalkerStealthLevel == 3 && bIgnoreDifficulty)
+    {
+        RepStalkerStealthLevel = 3;
+    }
 
     // General Configs
     if(bIgnoreDifficulty)
