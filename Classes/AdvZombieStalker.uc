@@ -19,18 +19,13 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 
 // TODO: Figure out a way to only disable Stalker's collision with
 // Other zeds and players, otherwise they're invincible while they-
-// -'re Leaping around
+// -'re Leaping around.
+// TODO: Make stalkers flank around their target
 
 //----------------------------------------------------------------------------
 // NOTE: All Variables are declared in the base class to eliminate hitching
 //----------------------------------------------------------------------------
 
-// NOTE: Stalkers not using their proper textures per difficulty level has been fixed! Yay!
-// But now, there's a bug where the Stalker's hair is permanently invisible. Why is it invisible?
-// Because it's the second in the Skins array and doesn't like replicating to clients(I think).
-// Fix possibility: Extremely low.
-// Also, Skins alongside RepSkins have to be defined because singleplayer only cares about the Skins array(?).
-// In other news, Sounds had to be manually tweaked per difficulty since Dividers/Multipliers don't calculate correctly.
 simulated function PostBeginPlay()
 {
     // Difficulty Scaling for her stealthiness
@@ -38,15 +33,10 @@ simulated function PostBeginPlay()
     {
         Skins[0] = GetCloakSkin();
         Skins[1] = GetCloakSkin();
-        if( (Level.Game.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
+        FootStepVolume = GetFootstepVolume();
+        FootStepRadius = GetFootstepRadius();
+        if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
-            FootstepVolume = 1.0;
-            FootstepRadius = 25;
-        }
-        else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
-        {
-            FootstepVolume = 0.5;
-            FootstepRadius = 10;
             SoundRadius = 20;
             SoundVolume = 25;
             MoanVolume  = 0.75;
@@ -56,8 +46,6 @@ simulated function PostBeginPlay()
         }
         else if( (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
         {
-            FootstepVolume = 0.25;
-            FootstepRadius = 6;
             SoundRadius = 12;
             SoundVolume = 12;
             MoanVolume  = 0.375;
@@ -67,8 +55,6 @@ simulated function PostBeginPlay()
         }
         else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
         {
-            FootstepVolume = 0.20;
-            FootstepRadius = 4;
             SoundRadius = 6;
             SoundVolume = 8;
             MoanVolume  = 0.150;
@@ -337,22 +323,38 @@ simulated function bool IsCloakSkin(Material toCheck) {
 
 simulated function Material GetCloakSkin() {
     if(default.StealthLevel == 0)
-    {
         return Shader'KF_Specimens_Trip_T.stalker_invisible';
-    }
     else if(default.StealthLevel == 1)
-    {
         return ColorModifier'KFAdvZeds_T.Stalker_Hard';
-    }
     else if(default.StealthLevel == 2)
-    {
         return ColorModifier'KFAdvZeds_T.Stalker_Sui';
-    }
     else if(default.StealthLevel == 3)
-    {
         return ColorModifier'KFAdvZeds_T.Stalker_HOE';
-    }
     return Shader'KF_Specimens_Trip_T.stalker_invisible';
+}
+
+simulated function float GetFootstepVolume() {
+    if(default.StealthLevel == 0)
+        return  1.0;
+    else if(default.StealthLevel == 1)
+        return  0.50;
+    else if(default.StealthLevel == 2)
+        return  0.25;
+    else if(default.StealthLevel == 3)
+        return  0.20;
+    return 1.0;
+}
+
+simulated function float GetFootstepRadius(){
+    if(default.StealthLevel == 0)
+        return  40;
+    else if(default.StealthLevel == 1)
+        return  10;
+    else if(default.StealthLevel == 2)
+        return  6;
+    else if(default.StealthLevel == 3)
+        return  4;
+    return 25;
 }
 
 // Cloak Functions ( called from animation notifies to save Gibby trouble ;) )
@@ -386,6 +388,8 @@ simulated function CloakStalker()
 
 		Skins[0] = GetCloakSkin();
 		Skins[1] = GetCloakSkin();
+        FootStepVolume = GetFootstepVolume();
+        FootStepRadius = GetFootstepRadius();
 
 		// Invisible - no shadow
 		if(PlayerShadow != none)
@@ -396,7 +400,10 @@ simulated function CloakStalker()
 		// Remove/disallow projectors on invisible people
 		Projectors.Remove(0, Projectors.Length);
 		bAcceptsProjectors = false;
-		SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+        if((Level.Game.GameDifficulty >= 5 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
+		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
+        else
+		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
 	}
 }
 
