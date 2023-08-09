@@ -9,6 +9,20 @@ var float NextCheckTime;
 var KFHumanPawn LocalKFHumanPawn;
 var float LastUncloakTime;
 
+// Variables(Config)
+var bool bDisorientingAttacks;                          // Shake the targets view, causing them to be disoriented. Config bool.
+var bool bPiercingAttacks;                                // Pierce through the targets armour, dealing damage to their health. Config bool.
+var bool bLeapIfSpotted;                                // Leap behind your target if they're facing towards you and you're close. Config bool.
+var bool bPreservativeDodge;                               // Dodge away from danger to preserve your life(nearby zed dies, grenades, taking damage). Config bool.
+var int StealthLevel;                                    // Stealth Level config. Affects both sounds and texture.
+var bool bIgnoreDifficulty;                                // Ignores difficulty and checks users preferences.
+var bool bDisableLeap;                                    // Used to temporarily disable the ability to leap if there are any nearby Stalkers.
+
+// Variables
+var vector DodgeSpot;                                    // What spot she's trying to dodge. Used to calculate to check whether she wants to dodge towards it, or away from it.
+var float JumpHeightMultiplier, JumpSpeedMultiplier;     // Multipliers used to dynamically change the Jump Height/Speed depending on what she's trying to dodge.
+var float LastDodgeTime;                                // Last time she used her presevative dodge.
+var float FootStepRadius;
 
 //-------------------------------------------------------------------------------
 // NOTE: All Code resides in the child class(this class was only created to
@@ -25,12 +39,14 @@ var() vector OffsetMag;
 var() vector OffsetRate;
 var() float    OffsetTime;
 var Material RepSkinHair;
+var float FootstepVolume;
 
 replication
 {
 	unreliable if ( (!bSkipActorPropertyReplication || bNetInitial) && (Role==ROLE_Authority) && bNetDirty )
-		RepSkinHair;
+		RepSkinHair, FootStepRadius, FootstepVolume;
 }
+
 event PostNetReceive() {
     if (Role != ROLE_Authority) {
         Skins[1]=RepSkin;
@@ -69,6 +85,8 @@ event Landed(vector HitNormal)
 
 defaultproperties
 {
+    bIgnoreDifficulty=false
+    StealthLevel=0
     DrawScale=1.1
     Prepivot=(Z=5.0)
     PounceSpeed=330.000000
@@ -79,6 +97,7 @@ defaultproperties
     GruntVolume=1.500000
     MoanVolume=1.500000
     FootstepVolume=1.000000
+    FootStepRadius=60
     TransientSoundRadius=500.000000
 
     MeleeAnims(0)="StalkerSpinAttack"

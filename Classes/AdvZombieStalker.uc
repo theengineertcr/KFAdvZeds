@@ -25,25 +25,12 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 // NOTE: All Variables are declared in the base class to eliminate hitching
 //----------------------------------------------------------------------------
 
-// Variables(Config)
-var bool bDisorientingAttacks;                          // Shake the targets view, causing them to be disoriented. Config bool.
-var bool bPiercingAttacks;                                // Pierce through the targets armour, dealing damage to their health. Config bool.
-var bool bLeapIfSpotted;                                // Leap behind your target if they're facing towards you and you're close. Config bool.
-var bool bPreservativeDodge;                               // Dodge away from danger to preserve your life(nearby zed dies, grenades, taking damage). Config bool.
-var int StealthLevel;                                    // Stealth Level config. Affects both sounds and texture.
-var bool bIgnoreDifficulty;                                // Ignores difficulty and checks users preferences.
-var bool bDisableLeap;                                    // Used to temporarily disable the ability to leap if there are any nearby Stalkers.
-
-// Variables
-var float  VoiceLevelDivider;                            // Divider that's used to reduce the volume of her sounds.
-var float  StepLevelDivider;                            // Divider that's used to reduce the volume of her footsteps.
-var vector DodgeSpot;                                    // What spot she's trying to dodge. Used to calculate to check whether she wants to dodge towards it, or away from it.
-var float JumpHeightMultiplier, JumpSpeedMultiplier;     // Multipliers used to dynamically change the Jump Height/Speed depending on what she's trying to dodge.
-var float LastDodgeTime;                                // Last time she used her presevative dodge.
-
 // NOTE: Stalkers not using their proper textures per difficulty level has been fixed! Yay!
 // But now, there's a bug where the Stalker's hair is permanently invisible. Why is it invisible?
-// Because it's the second in the Skins array and doesn't like replicating to clients. Fix possibility: 0
+// Because it's the second in the Skins array and doesn't like replicating to clients(I think).
+// Fix possibility: Extremely low.
+// Also, Skins alongside RepSkins have to be defined because singleplayer only cares about the Skins array(?).
+// In other news, Sounds had to be manually tweaked per difficulty since Dividers/Multipliers don't calculate correctly.
 simulated function PostBeginPlay()
 {
     // Difficulty Scaling for her stealthiness
@@ -51,31 +38,57 @@ simulated function PostBeginPlay()
     {
         if( (Level.Game.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
         {
-            VoiceLevelDivider = 1;
-            StepLevelDivider  = 1;
+            FootstepVolume = 1.0;
+            FootstepRadius = 25;
             RepSkin = Shader'KF_Specimens_Trip_T.stalker_invisible';
             RepSkinHair = Shader'KF_Specimens_Trip_T.stalker_invisible';
+            Skins[0] = Shader'KF_Specimens_Trip_T.stalker_invisible';
+            Skins[1] = Shader'KF_Specimens_Trip_T.stalker_invisible';
         }
         else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
-            VoiceLevelDivider = 3;
-            StepLevelDivider = 8;
+            FootstepVolume = 0.5;
+            FootstepRadius = 10;
+            SoundRadius = 20;
+            SoundVolume = 25;
+            MoanVolume  = 0.75;
+            GruntVolume = 0.75;
+            TransientSoundRadius = 250;
+            AmbientSoundScaling  = 3.4;
             RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Hard';
             RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Hard';
+            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
+            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
         }
         else if( (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
         {
-            VoiceLevelDivider = 8;
-            StepLevelDivider = 12;
+            FootstepVolume = 0.25;
+            FootstepRadius = 6;
+            SoundRadius = 12;
+            SoundVolume = 12;
+            MoanVolume  = 0.375;
+            GruntVolume = 0.375;
+            TransientSoundRadius = 125;
+            AmbientSoundScaling  = 1.7;
             RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Sui';
             RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Sui';
+            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
+            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
         }
         else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
         {
-            VoiceLevelDivider = 20;
-            StepLevelDivider = 20;
+            FootstepVolume = 0.20;
+            FootstepRadius = 4;
+            SoundRadius = 6;
+            SoundVolume = 8;
+            MoanVolume  = 0.150;
+            GruntVolume = 0.150;
+            TransientSoundRadius = 50;
+            AmbientSoundScaling  = 1.0;
             RepSkin = ColorModifier'KFAdvZeds_T.Stalker_HOE';
             RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_HOE';
+            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
+            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
         }
     }
 
@@ -193,7 +206,7 @@ simulated function BeginPlay()
 // Footsteps are linked to Anim-notifies
 simulated function StalkerFootstep()
 {
-    PlaySound(sound'KF_EnemiesFinalSnd.Stalker.Stalker_StepDefault', SLOT_None, FootstepVolume / StepLevelDivider);
+    PlaySound(sound'KF_EnemiesFinalSnd.Stalker.Stalker_StepDefault', SLOT_None, FootstepVolume,,FootStepRadius);
 }
 
 simulated function PostNetBeginPlay()
@@ -229,6 +242,9 @@ simulated function Tick(float DeltaTime)
     local Nade Grenade;
     local float LeapCheckTime;
     Super.Tick(DeltaTime);
+
+    if (Controller == none || IsInState('ZombieDying'))
+        return;
 
     foreach CollidingActors(class'Nade', Grenade, 150, Location)
     {
@@ -329,6 +345,8 @@ simulated function CloakStalker()
 
         RepSkin = Finalblend'KFX.StalkerGlow';
         RepSkinHair = Finalblend'KFX.StalkerGlow';
+        Skins[0] = Finalblend'KFX.StalkerGlow';
+        Skins[1] = Finalblend'KFX.StalkerGlow';
         bUnlit = true;
         return;
     }
@@ -348,21 +366,29 @@ simulated function CloakStalker()
         {
             RepSkin = Shader'KF_Specimens_Trip_T.stalker_invisible';
             RepSkinHair = Shader'KF_Specimens_Trip_T.stalker_invisible';
+            Skins[0] = Shader'KF_Specimens_Trip_T.stalker_invisible';
+            Skins[1] = Shader'KF_Specimens_Trip_T.stalker_invisible';
         }
         else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
             RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Hard';
             RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Hard';
+            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
+            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Hard';
         }
         else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
         {
             RepSkin = ColorModifier'KFAdvZeds_T.Stalker_Sui';
             RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_Sui';
+            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
+            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_Sui';
         }
         else if( (Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
         {
             RepSkin = ColorModifier'KFAdvZeds_T.Stalker_HOE';
             RepSkinHair = ColorModifier'KFAdvZeds_T.Stalker_HOE';
+            Skins[0] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
+            Skins[1] = ColorModifier'KFAdvZeds_T.Stalker_HOE';
         }
         // Invisible - no shadow
         if(PlayerShadow != none)
@@ -408,7 +434,8 @@ simulated function UnCloakStalker()
         {
             RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
             RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
-
+            Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
+            Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
             if (PlayerShadow != none)
                 PlayerShadow.bShadowActive = true;
 
@@ -432,6 +459,8 @@ simulated function SetZappedBehavior()
     // Handle setting the zed to uncloaked so the zapped overlay works properly
     RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
     RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
+    Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
+    Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
 
     if (PlayerShadow != none)
         PlayerShadow.bShadowActive = true;
@@ -484,6 +513,8 @@ function RemoveHead()
     {
         RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
         RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
+        Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
+        Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
     }
 }
 
@@ -500,6 +531,8 @@ simulated function PlayDying(class<DamageType> DamageType, vector HitLoc)
     {
         RepSkinHair = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
         RepSkin = Combiner'KF_Specimens_Trip_T.stalker_cmb';
+        Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
+        Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
     }
 }
 
