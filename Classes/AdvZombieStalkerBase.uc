@@ -38,7 +38,6 @@ var() float    RotTime;
 var() vector OffsetMag;
 var() vector OffsetRate;
 var() float    OffsetTime;
-var float FootstepVolume;
 
 function bool DoPounce()
 {
