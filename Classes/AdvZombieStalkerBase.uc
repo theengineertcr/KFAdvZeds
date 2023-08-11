@@ -65,7 +65,6 @@ event Landed(vector HitNormal)
     bPouncing=false;
     SetCollision(true, true, true);
     super.Landed(HitNormal);
-    PlayOwnedSound(GetSound(EST_Land), SLOT_Interact, 0);
 }
 
 defaultproperties

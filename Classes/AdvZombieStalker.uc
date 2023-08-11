@@ -35,7 +35,16 @@ simulated function PostBeginPlay()
         Skins[1] = GetCloakSkin();
         FootStepVolume = GetFootstepVolume();
         FootStepRadius = GetFootstepRadius();
-        if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
+        if( (Level.Game.GameDifficulty < 4.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
+        {
+            SoundRadius = 40;
+            SoundVolume = 50;
+            MoanVolume  = 1.0;
+            GruntVolume = 1.0;
+            TransientSoundRadius = 500;
+            AmbientSoundScaling  = 6.8;
+        }
+        else if( (Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
         {
             SoundRadius = 20;
             SoundVolume = 25;
@@ -126,7 +135,8 @@ function bool DoPounce()
          !bLeapIfSpotted || bLeapIfSpotted && (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty))
         return false;
 
-    CloakStalker();
+    if(!bCloaked)
+        CloakStalker();
     Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
     Velocity.Z = JumpZ * 1.75;
     SetPhysics(PHYS_Falling);
@@ -141,6 +151,8 @@ function PrepareToPounce()
     if ( bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking))
         return;
 
+    if(!bCloaked)
+        CloakStalker();
     Velocity = Normal(Location-Controller.Target.Location)*PounceSpeed*0.7;
     Velocity.Z = JumpZ * 0.5;
     SetPhysics(PHYS_Falling);
@@ -153,6 +165,8 @@ function PreservativeDodge()
         || !bPreservativeDodge || bPreservativeDodge && (Level.Game.GameDifficulty < 5.0 && !bIgnoreDifficulty))
         return;
 
+    if(!bCloaked)
+        CloakStalker();
     LastDodgeTime = Level.TimeSeconds;
     Velocity = Normal(DodgeSpot)*PounceSpeed*JumpSpeedMultiplier;
     Velocity.Z = JumpZ * JumpHeightMultiplier;
@@ -400,10 +414,15 @@ simulated function CloakStalker()
 		// Remove/disallow projectors on invisible people
 		Projectors.Remove(0, Projectors.Length);
 		bAcceptsProjectors = false;
-        if((Level.Game.GameDifficulty >= 5 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
-		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
-        else
+
+        if((Level.Game.GameDifficulty < 4.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
 		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+        else if((Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.10, true);
+        else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
+		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
+        else if((Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.02, true);
 	}
 }
 
