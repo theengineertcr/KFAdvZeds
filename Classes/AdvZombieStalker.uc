@@ -505,6 +505,13 @@ simulated function SetZappedBehavior()
     SetOverlayMaterial(Material'KFZED_FX_T.Energy.ZED_overlay_Hit_Shdr', 999, true);
 }
 
+function TakeDamage( int Damage, Pawn InstigatedBy, Vector Hitlocation, Vector Momentum, class<DamageType> damageType, optional int HitIndex)
+{
+    if(Damage < (HealthMax / 2.5))
+        PreservativeDodge();
+    Super.TakeDamage(Damage,instigatedBy,hitlocation,momentum,damageType,HitIndex);
+}
+
 // Turn off the zapped behavior
 simulated function UnSetZappedBehavior()
 {
