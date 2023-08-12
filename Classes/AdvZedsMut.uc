@@ -36,8 +36,8 @@ var config bool bIgnoreDifficulty;                      // All special abilities
 
 replication
 {
-	reliable if (Role == ROLE_Authority)
-		RepStalkerStealthLevel;
+    reliable if (Role == ROLE_Authority)
+        RepStalkerStealthLevel;
 }
 
 simulated function PostNetBeginPlay() {
