@@ -170,7 +170,7 @@ function PreservativeDodge()
     LastDodgeTime = Level.TimeSeconds;
     Velocity = Normal(DodgeSpot)*PounceSpeed*JumpSpeedMultiplier;
     Velocity.Z = JumpZ * JumpHeightMultiplier;
-    SetCollision(false, false, false);
+    bBlockActors=False;
     SetPhysics(PHYS_Falling);
     bPouncing=true;
 }
