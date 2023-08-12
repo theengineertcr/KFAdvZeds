@@ -6,6 +6,7 @@ class AdvZombieStalkerBase extends KFMonster
 #exec OBJ LOAD FILE=KF_BaseStalker.uax
 
 var float NextCheckTime;
+var float NextFlickerTime;
 var KFHumanPawn LocalKFHumanPawn;
 var float LastUncloakTime;
 

@@ -140,7 +140,7 @@ function bool DoPounce()
     Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
     Velocity.Z = JumpZ * 1.75;
     SetPhysics(PHYS_Falling);
-    SetCollision(false, false, false);
+    bBlockActors=False;
     SetAnimAction('HitReactionB');
     bPouncing=true;
     return true;
@@ -178,7 +178,7 @@ function PreservativeDodge()
 event Landed(vector HitNormal)
 {
     bPouncing=false;
-    SetCollision(true, true, true);
+    bBlockActors=True;
     super.Landed(HitNormal);
 }
 
@@ -266,8 +266,20 @@ simulated function Tick(float DeltaTime)
     }
 
     if( Level.NetMode==NM_DedicatedServer )
-		Return; // Servers aren't intrested in this info.
+        Return; // Servers aren't intrested in this info.
 
+    if(Level.TimeSeconds > NextFlickerTime && Health > 0 && bCloaked)
+    {
+        NextFlickerTime = Level.TimeSeconds + 3.0;
+        if((Level.Game.GameDifficulty < 4.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.15, true);
+        else if((Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.10, true);
+        else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.10, true);
+        else if((Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
+    }
     if( bZapped )
     {
         // Make sure we check if we need to be cloaked as soon as the zap wears off
@@ -311,6 +323,8 @@ simulated function Tick(float DeltaTime)
                 RealTimeShadow.Destroy();
         }
     }
+
+
     // If were behind our target, our attacks pierce through their armour
     if(AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeStalkerAPClaws' && bPiercingAttacks && (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty))
     {
@@ -381,49 +395,49 @@ simulated function CloakStalker()
         return;
     }
 
-	if ( bSpotted )
-	{
-		if( Level.NetMode == NM_DedicatedServer )
-			return;
+    if ( bSpotted )
+    {
+        if( Level.NetMode == NM_DedicatedServer )
+            return;
 
-		Skins[0] = Finalblend'KFX.StalkerGlow';
-		Skins[1] = Finalblend'KFX.StalkerGlow';
-		bUnlit = true;
-		return;
-	}
+        Skins[0] = Finalblend'KFX.StalkerGlow';
+        Skins[1] = Finalblend'KFX.StalkerGlow';
+        bUnlit = true;
+        return;
+    }
 
-	if ( !bDecapitated && !bCrispified ) // No head, no cloak, honey.  updated :  Being charred means no cloak either :D
-	{
-		Visibility = 1;
-		bCloaked = true;
+    if ( !bDecapitated && !bCrispified ) // No head, no cloak, honey.  updated :  Being charred means no cloak either :D
+    {
+        Visibility = 1;
+        bCloaked = true;
 
-		if( Level.NetMode == NM_DedicatedServer )
-			Return;
+        if( Level.NetMode == NM_DedicatedServer )
+            Return;
 
-		Skins[0] = GetCloakSkin();
-		Skins[1] = GetCloakSkin();
+        Skins[0] = GetCloakSkin();
+        Skins[1] = GetCloakSkin();
         FootStepVolume = GetFootstepVolume();
         FootStepRadius = GetFootstepRadius();
 
-		// Invisible - no shadow
-		if(PlayerShadow != none)
-			PlayerShadow.bShadowActive = false;
-		if(RealTimeShadow != none)
-			RealTimeShadow.Destroy();
+        // Invisible - no shadow
+        if(PlayerShadow != none)
+            PlayerShadow.bShadowActive = false;
+        if(RealTimeShadow != none)
+            RealTimeShadow.Destroy();
 
-		// Remove/disallow projectors on invisible people
-		Projectors.Remove(0, Projectors.Length);
-		bAcceptsProjectors = false;
+        // Remove/disallow projectors on invisible people
+        Projectors.Remove(0, Projectors.Length);
+        bAcceptsProjectors = false;
 
         if((Level.Game.GameDifficulty < 4.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
-		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
         else if((Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
-            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.10, true);
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.15, true);
         else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
-		    SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.05, true);
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.08, true);
         else if((Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
-            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.02, true);
-	}
+            SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.04, true);
+    }
 }
 
 simulated function UnCloakStalker()
@@ -433,37 +447,44 @@ simulated function UnCloakStalker()
         return;
     }
 
-	if( !bCrispified )
-	{
-		LastUncloakTime = Level.TimeSeconds;
+    if( !bCrispified )
+    {
+        LastUncloakTime = Level.TimeSeconds;
 
-		Visibility = default.Visibility;
-		bCloaked = false;
-		bUnlit = false;
+        Visibility = default.Visibility;
+        bCloaked = false;
+        bUnlit = false;
 
-		// 25% chance of our Enemy saying something about us being invisible
-		if( Level.NetMode!=NM_Client && !KFGameType(Level.Game).bDidStalkerInvisibleMessage && FRand()<0.25 && Controller.Enemy!=none &&
-		 PlayerController(Controller.Enemy.Controller)!=none )
-		{
-			PlayerController(Controller.Enemy.Controller).Speech('AUTO', 17, "");
-			KFGameType(Level.Game).bDidStalkerInvisibleMessage = true;
-		}
-		if( Level.NetMode == NM_DedicatedServer )
-			Return;
+        // 25% chance of our Enemy saying something about us being invisible
+        if( Level.NetMode!=NM_Client && !KFGameType(Level.Game).bDidStalkerInvisibleMessage && FRand()<0.25 && Controller.Enemy!=none &&
+         PlayerController(Controller.Enemy.Controller)!=none )
+        {
+            PlayerController(Controller.Enemy.Controller).Speech('AUTO', 17, "");
+            KFGameType(Level.Game).bDidStalkerInvisibleMessage = true;
+        }
+        if( Level.NetMode == NM_DedicatedServer )
+            Return;
 
-		if ( Skins[0] != Combiner'KF_Specimens_Trip_T.stalker_cmb' )
-		{
-			Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
-			Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
+        if ( Skins[0] != Combiner'KF_Specimens_Trip_T.stalker_cmb' )
+        {
+            Skins[1] = FinalBlend'KF_Specimens_Trip_T.stalker_fb';
+            Skins[0] = Combiner'KF_Specimens_Trip_T.stalker_cmb';
 
-			if (PlayerShadow != none)
-				PlayerShadow.bShadowActive = true;
+            if (PlayerShadow != none)
+                PlayerShadow.bShadowActive = true;
 
-			bAcceptsProjectors = true;
+            bAcceptsProjectors = true;
 
-			SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
-		}
-	}
+            if((Level.Game.GameDifficulty < 4.0 && !bIgnoreDifficulty) || StealthLevel == 0 && bIgnoreDifficulty)
+                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.25, true);
+            else if((Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel == 1 && bIgnoreDifficulty)
+                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.15, true);
+            else if((Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty) || StealthLevel == 2 && bIgnoreDifficulty)
+                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.08, true);
+            else if((Level.Game.GameDifficulty > 5.0 && !bIgnoreDifficulty) || StealthLevel == 3 && bIgnoreDifficulty)
+                SetOverlayMaterial(Material'KFX.FBDecloakShader', 0.04, true);
+        }
+    }
 }
 
 // Set the zed to the zapped behavior
