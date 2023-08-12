@@ -140,7 +140,7 @@ function bool DoPounce()
     Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
     Velocity.Z = JumpZ * 1.75;
     SetPhysics(PHYS_Falling);
-    bBlockActors=False;
+    SetCollision(true, false, false);
     SetAnimAction('HitReactionB');
     bPouncing=true;
     return true;
@@ -170,7 +170,7 @@ function PreservativeDodge()
     LastDodgeTime = Level.TimeSeconds;
     Velocity = Normal(DodgeSpot)*PounceSpeed*JumpSpeedMultiplier;
     Velocity.Z = JumpZ * JumpHeightMultiplier;
-    bBlockActors=False;
+    SetCollision(true, false, false);
     SetPhysics(PHYS_Falling);
     bPouncing=true;
 }
@@ -178,7 +178,7 @@ function PreservativeDodge()
 event Landed(vector HitNormal)
 {
     bPouncing=false;
-    bBlockActors=True;
+    SetCollision(true, true, true);
     super.Landed(HitNormal);
 }
 
