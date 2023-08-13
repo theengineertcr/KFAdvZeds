@@ -117,4 +117,5 @@ function bool NotifyLanded(vector HitNormal)
 
 defaultproperties
 {
+    StrafingAbility=0.100000
 }
