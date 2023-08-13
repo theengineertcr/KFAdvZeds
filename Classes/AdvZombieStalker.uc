@@ -3,7 +3,7 @@
  *
  * Author       : theengineertcr
  * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
- * License      : MIT
+ * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
 */
 class AdvZombieStalker extends AdvZombieStalkerBase
@@ -162,7 +162,7 @@ function PrepareToPounce()
 function PreservativeDodge()
 {
     if ( bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking) || LastDodgeTime + 8 > Level.TimeSeconds
-        || !bPreservativeDodge || bPreservativeDodge && (Level.Game.GameDifficulty < 5.0 && !bIgnoreDifficulty))
+        || !bPreservativeDodge || bPreservativeDodge && (Level.Game.GameDifficulty < 4.0 && !bIgnoreDifficulty))
         return;
 
     if(!bCloaked)
@@ -325,18 +325,20 @@ simulated function Tick(float DeltaTime)
     }
 
 
-    // If were behind our target, our attacks pierce through their armour
+    // If were behind our target, our attacks pierce through their armour and deal double damage
     if(AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeStalkerAPClaws' && bPiercingAttacks && (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty))
     {
         ZombieDamType[0]=Class'DamTypeStalkerAPClaws';
         ZombieDamType[1]=Class'DamTypeStalkerAPClaws';
         ZombieDamType[2]=Class'DamTypeStalkerAPClaws';
+        MeleeDamage = Max( DifficultyDamageModifer() * default.MeleeDamage * 2, 1 );
     }
     else if(!AdvStalkerController(Controller).bFlanking && ZombieDamType[0]!=Class'DamTypeSlashingAttack')
     {
         ZombieDamType[0]=Class'DamTypeSlashingAttack';
         ZombieDamType[1]=Class'DamTypeSlashingAttack';
         ZombieDamType[2]=Class'DamTypeSlashingAttack';
+        MeleeDamage = Max( DifficultyDamageModifer() * default.MeleeDamage, 1 );
     }
 }
 
@@ -507,7 +509,7 @@ simulated function SetZappedBehavior()
 
 function TakeDamage( int Damage, Pawn InstigatedBy, Vector Hitlocation, Vector Momentum, class<DamageType> damageType, optional int HitIndex)
 {
-    if(Damage < (HealthMax / 2.5))
+    if(Damage < (HealthMax / 2.5) && (Level.Game.GameDifficulty > 4.0 && !bIgnoreDifficulty))
         PreservativeDodge();
     Super.TakeDamage(Damage,instigatedBy,hitlocation,momentum,damageType,HitIndex);
 }
