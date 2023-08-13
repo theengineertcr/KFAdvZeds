@@ -19,7 +19,9 @@
 
   - Chance to move and shoot increased by 30%, up to a total of 85%.
   - Chance to use the Flamethrower attack and move increased by 28%, up to a total of 33%.
+</details>
 
+<details>
   <summary>Stalker Changes</summary>
 
   ## General Changes
@@ -44,5 +46,5 @@
   - Gains the ability to leap behind their target if the target is facing towards them. Cannot use this ability if there are other Stalker's nearby. Has 14.5 second cooldown.
   - After leaping, cannot disorient the player's view until leap cooldown is restored - unless if it's a backstab.
   - Deals armour piercing damage when backstabbing their target.
-  - Deals additional damage on backstabs.
+  - Deals double damage on backstabs.
 </details>
