@@ -1,7 +1,7 @@
 /*
  * Author       : theengineertcr
  * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
- * License      : MIT
+ * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
 */
 class AdvHuskFlameProjectile extends FlameTendril;

@@ -1,3 +1,11 @@
+/*
+ * Modified Stalker Controller Class to check if she's flanking her target and time until she can leap again.
+ *
+ * Author       : theengineertcr
+ * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
+ * License      : GPL 3.0
+ * Copyright    : 2023 theengineertcr
+*/
 class AdvStalkerController extends KFMonsterController;
 
 var    float    LastPounceTime;
