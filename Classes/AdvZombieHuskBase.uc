@@ -29,10 +29,10 @@ defaultproperties
     MeleeAnims(1)="Strike"
     MeleeAnims(2)="Strike"
     damageForce=70000
-    bFatAss=True
+    bFatAss=true
     KFRagdollName="Burns_Trip"
 
-    AmmunitionClass=Class'KFMod.BZombieAmmo'
+    AmmunitionClass=class'KFMod.BZombieAmmo'
     ScoringValue=17
     IdleHeavyAnim="Idle"
     IdleRifleAnim="Idle"
@@ -70,14 +70,14 @@ defaultproperties
     MeleeDamage=15
     JumpZ=320.000000
 
-    bCannibal = False // No animation for him.
+    bCannibal = false // No animation for him.
     MenuName="Husk"
 
     CollisionRadius=26.000000
     CollisionHeight=44
-    bCanDistanceAttackDoors=True
+    bCanDistanceAttackDoors=true
     Intelligence=BRAINS_Mammal
-    bUseExtendedCollision=True
+    bUseExtendedCollision=true
     ColOffset=(Z=36)
     ColRadius=30
     ColHeight=33

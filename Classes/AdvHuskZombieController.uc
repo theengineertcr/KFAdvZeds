@@ -9,19 +9,21 @@
 class AdvHuskZombieController extends KFMonsterController;
 
 // Overridden to create a delay between when the husk fires his projectiles
-function bool FireWeaponAt(Actor A)
-{
-    if ( A == None )
+function bool FireWeaponAt(Actor A) {
+    if (A == none) {
         A = Enemy;
-    if ( (A == None) || (Focus != A) )
+    }
+    if (A == none || Focus != A) {
         return false;
+    }
     Target = A;
 
     // "ZombieHusk to "AdvZombieHusk"
     // Otherwise, delay wouldn't apply and they'd endlessly shoot
-    if( (VSize(A.Location - Pawn.Location) >= AdvZombieHusk(Pawn).MeleeRange + Pawn.CollisionRadius + Target.CollisionRadius) &&
-        AdvZombieHusk(Pawn).NextFireProjectileTime - Level.TimeSeconds > 0 )
-    {
+    if (
+        (VSize(A.Location - Pawn.Location) >= AdvZombieHusk(Pawn).MeleeRange + Pawn.CollisionRadius + Target.CollisionRadius) &&
+        AdvZombieHusk(Pawn).NextFireProjectileTime - Level.TimeSeconds > 0
+    ) {
         return false;
     }
 
@@ -29,13 +31,10 @@ function bool FireWeaponAt(Actor A)
     return false;
 }
 
-/*
-AdjustAim()
-Returns a rotation which is the direction the bot should aim - after introducing the appropriate aiming error
-Overridden to cause the zed to fire at the feet more often - Ramm
-*/
-function rotator AdjustAim(FireProperties FiredAmmunition, vector projStart, int aimerror)
-{
+
+// returns a rotation which is the direction the bot should aim - after introducing the appropriate aiming error
+// Overridden to cause the zed to fire at the feet more often - Ramm
+function rotator AdjustAim(FireProperties FiredAmmunition, vector projStart, int aimerror) {
     local rotator FireRotation, TargetLook;
     local float FireDist, TargetDist, ProjSpeed;
     local actor HitActor;
@@ -44,192 +43,177 @@ function rotator AdjustAim(FireProperties FiredAmmunition, vector projStart, int
     local bool bDefendMelee, bClean, bLeadTargetNow;
     local bool bWantsToAimAtFeet;
 
-    if ( FiredAmmunition.ProjectileClass != None )
+    if (FiredAmmunition.ProjectileClass != none) {
         projspeed = FiredAmmunition.ProjectileClass.default.speed;
+    }
 
     // make sure bot has a valid target
-    if ( Target == None )
-    {
+    if (Target == none) {
         Target = Enemy;
-        if ( Target == None )
+        if (Target == none) {
             return Rotation;
+        }
     }
     FireSpot = Target.Location;
     TargetDist = VSize(Target.Location - Pawn.Location);
 
     // perfect aim at stationary objects
-    if ( Pawn(Target) == None )
-    {
-        if ( !FiredAmmunition.bTossed )
+    if (Pawn(Target) == none) {
+        if (!FiredAmmunition.bTossed) {
             return rotator(Target.Location - projstart);
-        else
-        {
-            FireDir = AdjustToss(projspeed,ProjStart,Target.Location,true);
+        } else {
+            FireDir = AdjustToss(projspeed, ProjStart, Target.Location, true);
             SetRotation(Rotator(FireDir));
             return Rotation;
         }
     }
 
     bLeadTargetNow = FiredAmmunition.bLeadTarget && bLeadTarget;
-    bDefendMelee = ( (Target == Enemy) && DefendMelee(TargetDist) );
-    aimerror = AdjustAimError(aimerror,TargetDist,bDefendMelee,FiredAmmunition.bInstantHit, bLeadTargetNow);
+    bDefendMelee = (Target == Enemy) && DefendMelee(TargetDist);
+    aimerror = AdjustAimError(aimerror, TargetDist, bDefendMelee, FiredAmmunition.bInstantHit, bLeadTargetNow);
 
     // lead target with non instant hit projectiles
-    if ( bLeadTargetNow )
-    {
+    if (bLeadTargetNow) {
         TargetVel = Target.Velocity;
         // hack guess at projecting falling velocity of target
-        if ( Target.Physics == PHYS_Falling )
-        {
-            if ( Target.PhysicsVolume.Gravity.Z <= Target.PhysicsVolume.Default.Gravity.Z )
-                TargetVel.Z = FMin(TargetVel.Z + FMax(-400, Target.PhysicsVolume.Gravity.Z * FMin(1,TargetDist/projSpeed)),0);
-            else
+        if (Target.Physics == PHYS_Falling) {
+            if (Target.PhysicsVolume.Gravity.Z <= Target.PhysicsVolume.default.Gravity.Z) {
+                TargetVel.Z = FMin(TargetVel.Z + FMax(-400, Target.PhysicsVolume.Gravity.Z * FMin(1, TargetDist / projSpeed)), 0);
+            } else {
                 TargetVel.Z = FMin(0, TargetVel.Z);
+            }
         }
         // more or less lead target (with some random variation)
-        FireSpot += FMin(1, 0.7 + 0.6 * FRand()) * TargetVel * TargetDist/projSpeed;
+        FireSpot += FMin(1, 0.7 + 0.6 * FRand()) * TargetVel * TargetDist / projSpeed;
         FireSpot.Z = FMin(Target.Location.Z, FireSpot.Z);
 
-        if ( (Target.Physics != PHYS_Falling) && (FRand() < 0.55) && (VSize(FireSpot - ProjStart) > 1000) )
-        {
+        if ( (Target.Physics != PHYS_Falling) && (FRand() < 0.55) && (VSize(FireSpot - ProjStart) > 1000) ) {
             // don't always lead far away targets, especially if they are moving sideways with respect to the bot
             TargetLook = Target.Rotation;
-            if ( Target.Physics == PHYS_Walking )
+            if (Target.Physics == PHYS_Walking) {
                 TargetLook.Pitch = 0;
-            bClean = ( ((Vector(TargetLook) Dot Normal(Target.Velocity)) >= 0.71) && FastTrace(FireSpot, ProjStart) );
-        }
-        else // make sure that bot isn't leading into a wall
+            }
+            bClean = (((Vector(TargetLook) Dot Normal(Target.Velocity)) >= 0.71) && FastTrace(FireSpot, ProjStart));
+        } else {
+            // make sure that bot isn't leading into a wall
             bClean = FastTrace(FireSpot, ProjStart);
-        if ( !bClean)
-        {
+        }
+
+        if (!bClean) {
             // reduce amount of leading
-            if ( FRand() < 0.3 )
+            if (FRand() < 0.3) {
                 FireSpot = Target.Location;
-            else
+            } else {
                 FireSpot = 0.5 * (FireSpot + Target.Location);
+            }
         }
     }
 
-    bClean = false; //so will fail first check unless shooting at feet
+    // so will fail first check unless shooting at feet
+    bClean = false;
 
     // Randomly determine if we should try and splash damage with the fire projectile
-    if( FiredAmmunition.bTrySplash )
-    {
-        if( Skill < 2.0 )
-        {
-            if(FRand() > 0.85)
-            {
+    if (FiredAmmunition.bTrySplash) {
+        if (Skill < 2.0) {
+            if (FRand() > 0.85) {
                 bWantsToAimAtFeet = true;
             }
-        }
-        else if( Skill < 3.0 )
-        {
-            if(FRand() > 0.5)
-            {
+        } else if (Skill < 3.0) {
+            if (FRand() > 0.5) {
                 bWantsToAimAtFeet = true;
             }
-        }
-        else if( Skill >= 3.0 )
-        {
-            if(FRand() > 0.25)
-            {
+        } else if (Skill >= 3.0) {
+            if (FRand() > 0.25) {
                 bWantsToAimAtFeet = true;
             }
         }
     }
 
-    if ( FiredAmmunition.bTrySplash && (Pawn(Target) != None) && (((Target.Physics == PHYS_Falling)
-        && (Pawn.Location.Z + 80 >= Target.Location.Z)) || ((Pawn.Location.Z + 19 >= Target.Location.Z)
-        && (bDefendMelee || bWantsToAimAtFeet))) )
-    {
-        HitActor = Trace(HitLocation, HitNormal, FireSpot - vect(0,0,1) * (Target.CollisionHeight + 10), FireSpot, false);
-
-         bClean = (HitActor == None);
-        if ( !bClean )
-        {
-            FireSpot = HitLocation + vect(0,0,3);
+    if (
+        FiredAmmunition.bTrySplash &&
+        Pawn(Target) != none &&
+        ((Target.Physics == PHYS_Falling && Pawn.Location.Z + 80 >= Target.Location.Z) ||
+         (Pawn.Location.Z + 19 >= Target.Location.Z && (bDefendMelee || bWantsToAimAtFeet)))
+    ) {
+        HitActor = Trace(HitLocation, HitNormal, FireSpot - vect(0, 0, 1) * (Target.CollisionHeight + 10), FireSpot, false);
+        bClean = (HitActor == none);
+        if (!bClean) {
+            FireSpot = HitLocation + vect(0, 0 ,3);
             bClean = FastTrace(FireSpot, ProjStart);
+        } else {
+            bClean = (Target.Physics == PHYS_Falling) && FastTrace(FireSpot, ProjStart);
         }
-        else
-            bClean = ( (Target.Physics == PHYS_Falling) && FastTrace(FireSpot, ProjStart) );
     }
 
-    if ( !bClean )
-    {
-        //try middle
+    if (!bClean) {
+        // try middle
         FireSpot.Z = Target.Location.Z;
-         bClean = FastTrace(FireSpot, ProjStart);
+        bClean = FastTrace(FireSpot, ProjStart);
     }
-    if ( FiredAmmunition.bTossed && !bClean && bEnemyInfoValid )
-    {
+    if (FiredAmmunition.bTossed && !bClean && bEnemyInfoValid) {
         FireSpot = LastSeenPos;
-         HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
-        if ( HitActor != None )
-        {
+        HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
+        if (HitActor != none) {
             bCanFire = false;
             FireSpot += 2 * Target.CollisionHeight * HitNormal;
         }
         bClean = true;
     }
 
-    if( !bClean )
-    {
+    if (!bClean) {
         // try head
-         FireSpot.Z = Target.Location.Z + 0.9 * Target.CollisionHeight;
-         bClean = FastTrace(FireSpot, ProjStart);
+        FireSpot.Z = Target.Location.Z + 0.9 * Target.CollisionHeight;
+        bClean = FastTrace(FireSpot, ProjStart);
     }
-    if ( !bClean && (Target == Enemy) && bEnemyInfoValid )
-    {
+    if (!bClean && (Target == Enemy) && bEnemyInfoValid) {
         FireSpot = LastSeenPos;
-        if ( Pawn.Location.Z >= LastSeenPos.Z )
+        if (Pawn.Location.Z >= LastSeenPos.Z) {
             FireSpot.Z -= 0.4 * Enemy.CollisionHeight;
-         HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
-        if ( HitActor != None )
-        {
+        }
+        HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
+        if (HitActor != none) {
             FireSpot = LastSeenPos + 2 * Enemy.CollisionHeight * HitNormal;
-            if ( Monster(Pawn).SplashDamage() && (Skill >= 4) )
-            {
-                 HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
-                if ( HitActor != None )
+            if (Monster(Pawn).SplashDamage() && Skill >= 4) {
+                HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
+                if (HitActor != none) {
                     FireSpot += 2 * Enemy.CollisionHeight * HitNormal;
+                }
             }
             bCanFire = false;
         }
     }
 
     // adjust for toss distance
-    if ( FiredAmmunition.bTossed )
-        FireDir = AdjustToss(projspeed,ProjStart,FireSpot,true);
-    else
+    if (FiredAmmunition.bTossed) {
+        FireDir = AdjustToss(projspeed, ProjStart, FireSpot, true);
+    } else {
         FireDir = FireSpot - ProjStart;
+    }
 
     FireRotation = Rotator(FireDir);
     realYaw = FireRotation.Yaw;
-    InstantWarnTarget(Target,FiredAmmunition,vector(FireRotation));
+    InstantWarnTarget(Target, FiredAmmunition, vector(FireRotation));
 
     FireRotation.Yaw = SetFireYaw(FireRotation.Yaw + aimerror);
     FireDir = vector(FireRotation);
     // avoid shooting into wall
-    FireDist = FMin(VSize(FireSpot-ProjStart), 400);
+    FireDist = FMin(VSize(FireSpot - ProjStart), 400);
     FireSpot = ProjStart + FireDist * FireDir;
     HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
-    if ( HitActor != None )
-    {
-        if ( HitNormal.Z < 0.7 )
-        {
+    if (HitActor != none) {
+        if (HitNormal.Z < 0.7) {
             FireRotation.Yaw = SetFireYaw(realYaw - aimerror);
             FireDir = vector(FireRotation);
             FireSpot = ProjStart + FireDist * FireDir;
             HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
         }
-        if ( HitActor != None )
-        {
+        if (HitActor != none) {
             FireSpot += HitNormal * 2 * Target.CollisionHeight;
-            if ( Skill >= 4 )
-            {
+            if (Skill >= 4) {
                 HitActor = Trace(HitLocation, HitNormal, FireSpot, ProjStart, false);
-                if ( HitActor != None )
+                if (HitActor != none) {
                     FireSpot += Target.CollisionHeight * HitNormal;
+                }
             }
             FireDir = Normal(FireSpot - ProjStart);
             FireRotation = rotator(FireDir);

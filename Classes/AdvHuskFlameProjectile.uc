@@ -6,35 +6,24 @@
 */
 class AdvHuskFlameProjectile extends FlameTendril;
 
-//-----------------------------------------------------------------------------
-// PostBeginPlay
-//-----------------------------------------------------------------------------
-simulated function PostBeginPlay()
-{
+simulated function PostBeginPlay() {
     super.PostBeginPlay();
 
     // Difficulty Scaling
-    if (Level.Game != none)
-    {
-        if( Level.Game.GameDifficulty < 2.0 )
-        {
+    if (Level.Game != none) {
+        if (Level.Game.GameDifficulty < 2.0) {
             Damage = default.Damage - 3;
             DamageRadius = default.DamageRadius * 0.5;
-        }
-        else if( Level.Game.GameDifficulty < 4.0 )
-        {
+        } else if (Level.Game.GameDifficulty < 4.0) {
             Damage = default.Damage * 1.0;
             DamageRadius = default.DamageRadius * 1.0;
 
-        }
-        else if( Level.Game.GameDifficulty < 5.0 )
-        {
+        } else if (Level.Game.GameDifficulty < 5.0) {
             Damage = default.Damage + 4;
             DamageRadius = default.DamageRadius * 1.25;
             PenDamageReduction = default.PenDamageReduction * 1.25;
-        }
-        else // Hardest difficulty
-        {
+        } else {
+            // Hardest difficulty
             Damage = default.Damage + 6;
             DamageRadius = default.DamageRadius * 1.5;
             PenDamageReduction = default.PenDamageReduction * 1.5;
@@ -42,8 +31,7 @@ simulated function PostBeginPlay()
     }
 }
 
-defaultproperties
-{
+defaultproperties {
     DamageAtten=5.000000
     MaxPenetrations=2
     PenDamageReduction=0.500000

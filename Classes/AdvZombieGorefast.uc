@@ -6,7 +6,6 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
 class AdvZombieGorefast extends AdvZombieGorefastBase
     abstract;
 
@@ -35,7 +34,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 //     local bool bWasAnimating;
 
 //     if (LeftFootBone == '')
-//         return False;
+//         return false;
 
 //     // If we are a dedicated server estimate what animation is most likely playing on the client
 //     if (Level.NetMode == NM_DedicatedServer)
@@ -197,7 +196,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 
 // function RangedAttack(Actor A)
 // {
-//     Super.RangedAttack(A);
+//     super.RangedAttack(A);
 //     if( !bShotAnim && !bDecapitated && VSize(A.Location-Location)<=700 )
 //         GoToState('RunningState');
 // }
@@ -240,7 +239,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 //         {
 //             SetGroundSpeed(GetOriginalGroundSpeed());
 //         }
-//         bRunning = False;
+//         bRunning = false;
 //         if( Level.NetMode!=NM_DedicatedServer )
 //             PostNetReceive();
 
@@ -318,7 +317,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 //         // Keep the gorefast moving toward its target when attacking
 //         if( Role == ROLE_Authority && bShotAnim && !bWaitForAnim )
 //         {
-//             if( LookTarget!=None )
+//             if( LookTarget!=none )
 //             {
 //                 Acceleration = AccelRate * Normal(LookTarget.Location - Location);
 //             }
@@ -331,7 +330,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 // Begin:
 //     GoTo('CheckCharge');
 // CheckCharge:
-//     if( Controller!=None && Controller.Target!=None && VSize(Controller.Target.Location-Location)<700 )
+//     if( Controller!=none && Controller.Target!=none && VSize(Controller.Target.Location-Location)<700 )
 //     {
 //         Sleep(0.5+ FRand() * 0.5);
 //         //log("Still charging");
@@ -364,7 +363,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 //         // Keep the gorefast moving toward its target when attacking
 //         if( Role == ROLE_Authority && bShotAnim && !bWaitForAnim )
 //         {
-//             if( LookTarget!=None )
+//             if( LookTarget!=none )
 //             {
 //                 Acceleration = AccelRate * Normal(LookTarget.Location - Location);
 //             }
@@ -377,7 +376,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 // Begin:
 //     GoTo('CheckCharge');
 // CheckCharge:
-//     if( bZedUnderControl || (Controller!=None && Controller.Target!=None && VSize(Controller.Target.Location-Location)<700) )
+//     if( bZedUnderControl || (Controller!=none && Controller.Target!=none && VSize(Controller.Target.Location-Location)<700) )
 //     {
 //         Sleep(0.5+ FRand() * 0.5);
 //         GoTo('CheckCharge');
@@ -395,7 +394,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 //     local bool bWantsToAttackAndMove;
 
 //     if( NewAction=='' )
-//         Return;
+//         return;
 
 //     bWantsToAttackAndMove = NewAction == 'ClawAndMove';
 
@@ -427,7 +426,7 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 //     if( Level.NetMode!=NM_Client )
 //     {
 //         AnimAction = NewAction;
-//         bResetAnimAct = True;
+//         bResetAnimAct = true;
 //         ResetAnimActTime = Level.TimeSeconds+0.3;
 //     }
 // }
@@ -474,11 +473,11 @@ class AdvZombieGorefast extends AdvZombieGorefastBase
 // defaultproperties
 // {
 //     //-------------------------------------------------------------------------------
-//     // NOTE: Most Default Properties are set in the base class to eliminate hitching
+//     // NOTE: Most default Properties are set in the base class to eliminate hitching
 //     //-------------------------------------------------------------------------------
 
 //     EventClasses(0)="KFAdvZeds.AdvZombieGorefast"
-//     ControllerClass=Class'KFAdvZeds.AdvZombieGorefastController'
+//     ControllerClass=class'KFAdvZeds.AdvZombieGorefastController'
 
 //     // The gorefasts left arm is already set to gibbed so that shooting his nub will not create severed limbs
 //     bLeftArmGibbed=true

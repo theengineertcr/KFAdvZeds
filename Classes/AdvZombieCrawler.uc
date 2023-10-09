@@ -6,10 +6,10 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
-// Were going to be using arachnophobia crawlers code and tweak it
 class AdvZombieCrawler extends AdvZombieCrawlerBase
     abstract;
+
+// Were going to be using arachnophobia crawlers code and tweak it
 
 var bool bEnableFireResistance;     // No longer loses sight of his target when burning.
 var bool bEnableDodge;              // Dodges from fire, explosives, and what not.

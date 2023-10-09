@@ -6,19 +6,14 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
 class AdvZombieScrake extends AdvZombieScrakeBase
     abstract;
 
-
-/*
-Base changes TODO:
-
-Scrake melee attack = instant kill
-Scrake doesn't turn to face target while melee attacking, allowing flanking from speedy perks.
-Scrake continues moving while melee attacking but can't rotate during it
-Scrake laughs after killing his target(modify pat anims)
- */
+// Base changes TODO:
+// Scrake melee attack = instant kill
+// Scrake doesn't turn to face target while melee attacking, allowing flanking from speedy perks.
+// Scrake continues moving while melee attacking but can't rotate during it
+// Scrake laughs after killing his target(modify pat anims)
 
 var bool bEnablePush;               // Scrakes pushes zeds and players away while charging.
 var bool bFocusTarget;              // Scrake will pursue the first player he sees until they die or they lose sight of them for more than 10-15 seconds.

@@ -11,8 +11,7 @@ class AdvZombieHusk_S extends AdvZombieHusk;
 // We need to let the game load our Animation set
 #exec OBJ LOAD FILE=KFAdvZeds_A.ukx
 
-defaultproperties
-{
+defaultproperties {
     DetachedArmClass=class'SeveredArmHusk'
     DetachedSpecialArmClass=class'SeveredArmHuskGun'
     DetachedLegClass=class'SeveredLegHusk'

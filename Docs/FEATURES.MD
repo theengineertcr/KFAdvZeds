@@ -1,5 +1,5 @@
 # Features
-> [Return to README](../README.md#documentation)
+> [return to README](../README.md#documentation)
 
 ## Finished Features
 

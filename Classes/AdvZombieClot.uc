@@ -6,15 +6,12 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
 class AdvZombieClot extends AdvZombieClotBase
     abstract;
 
-/*
-todo: clot base health to 400, head health to 95,
-new "brain shot" hitzone above main head that has 25 hp,
-no head = instantly dead
- */
+// todo: clot base health to 400, head health to 95,
+// new "brain shot" hitzone above main head that has 25 hp,
+// no head = instantly dead
 
 var bool bEnableDismemberment;          // Clots can lose their limbs.
 var bool bDisableIncreasedDurability;   // Clots use default health
