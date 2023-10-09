@@ -234,7 +234,6 @@ simulated function Tick(float DeltaTime) {
     local KFMonster Monster;
     local Nade Grenade;
     local float LeapCheckTime;
-    super(ZombieStalkerBase).Tick(DeltaTime);
 
     if (Controller != none && !IsInState('ZombieDying')) {
         foreach CollidingActors(class'Nade', Grenade, 150, Location) {
