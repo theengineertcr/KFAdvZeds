@@ -16,6 +16,8 @@ class AdvZombieHusk extends AdvZombieHuskBase
 // NOTE: All Variables are declared in the base class to eliminate hitching
 //----------------------------------------------------------------------------
 
+// TODO: Add an avoidmarker so zeds don't walk infront of a Husk(excludes big zeds and bloat)
+
 // HuskFireProjClass to "AdvHuskFireProjClass"
 // Subsequent mentions have been modified as well
 var class<Projectile> AdvHuskFireProjClass;
@@ -26,8 +28,14 @@ var class<Projectile> AdvHuskFlameProjClass;
 // Config Variables
 var bool bEnableHuskMoveAndShoot;
 var bool bEnableHuskFlamethrower;
+var bool bEnableHuskSuicideAttack;      // the suicide bomb attack from kf2
 var bool bEnableHuskFlameAndMove;
+var bool bEnableAbsorption;             // Stops projectiles and hitscan weapons with penetration from going through him. Does not affect damage.
 var bool bIgnoreDifficulty;
+
+//cancelled/might not get added
+// var bool bEnableHuskBloatComboAttack;// another take on the suicide bomb attack, but instead of the husk doing it himself, the bloat is the one going boom.
+// var bool bEnableHuskTacticalSmoke;   // Husks will deliberately light the floor below them on fire, causing a smoke screen and lighting themselves on fire. Used when there's a big group of zeds surrounding the Husk.
 
 simulated function BeginPlay()
 {
