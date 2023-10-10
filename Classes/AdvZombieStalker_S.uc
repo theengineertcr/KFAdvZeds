@@ -1,5 +1,5 @@
 /*
- * Standard Stalker Event Class
+ * Standard Stalker Event class
  *
  * Author       : theengineertcr
  * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
@@ -8,15 +8,14 @@
 */
 class AdvZombieStalker_S extends AdvZombieStalker;
 
-defaultproperties
-{
+defaultproperties {
     DetachedArmClass=class'SeveredArmStalker'
     DetachedLegClass=class'SeveredLegStalker'
     DetachedHeadClass=class'SeveredHeadStalker'
 
     Mesh=SkeletalMesh'KF_Freaks_Trip.Stalker_Freak'
-    Skins(0) = Shader'KF_Specimens_Trip_T.stalker_invisible'//Combiner'KF_Specimens_Trip_T.stalker_cmb'//Shader 'KFCharacters.StalkerHairShader'
-    Skins(1) = Shader'KF_Specimens_Trip_T.stalker_invisible'//Shader'KFCharacters.CloakShader';
+    Skins(0)=Shader'KF_Specimens_Trip_T.stalker_invisible'  // Combiner'KF_Specimens_Trip_T.stalker_cmb'//Shader 'KFCharacters.StalkerHairShader'
+    Skins(1)=Shader'KF_Specimens_Trip_T.stalker_invisible'  // Shader'KFCharacters.CloakShader';
 
     AmbientSound=Sound'KF_BaseStalker.Stalker_IdleLoop'
     MoanVoice=Sound'KF_EnemiesFinalSnd.Stalker_Talk'

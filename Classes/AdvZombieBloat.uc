@@ -6,10 +6,8 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
 class AdvZombieBloat extends AdvZombieBloatBase
     abstract;
-
 
 var bool bEnableAbsorption;           // Stops projectiles and hitscan weapons with penetration from going through him. Does not affect damage.
 var bool bEnableNewBurnBehaviour;     // When Bloats die while on fire, their body explodes into flames and ignites anyone nearby.

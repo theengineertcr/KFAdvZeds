@@ -4,5 +4,5 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-class AdvZombieSirenBase extends KFMonster
+class AdvZombieScrakeBase extends KFMonster
     abstract;

@@ -6,6 +6,5 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
 class AdvZombieGorefastBase extends KFMonster
     abstract;

@@ -7,7 +7,3 @@
  * Copyright    : 2023 theengineertcr
 */
 class AdvHuskFireProjectile extends HuskFireProjectile;
-
-defaultproperties
-{
-}

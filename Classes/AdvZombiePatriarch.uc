@@ -6,16 +6,12 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
 class AdvZombiePatriarch extends AdvZombiePatriarchBase
     abstract;
 
-
-/*
-    TODO:
-    Doesn't charge unless he takes damage while cloaked
-    Cloak gradually weakens when he goes to heal, making him flicker more.
- */
+// TODO:
+// Doesn't charge unless he takes damage while cloaked
+// Cloak gradually weakens when he goes to heal, making him flicker more.
 
 var bool bEnableDismemberment;          // Can lose his arms, head, and stomach tentacle. I would do legs too, but I can't animate :))))
 var bool bEnableSmartTargetPriority;    // Focuses on hurt/armoured players.

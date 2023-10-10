@@ -6,13 +6,10 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-
-
-//todo: make her take extra dmg from fire
-
 class AdvZombieSiren extends AdvZombieSirenBase
     abstract;
 
+// todo: make her take extra dmg from fire
 
 var bool bEnableLiterallyBlind;         // When the Siren is not near any zeds, or isn't taking any gun fire, she loses her ability to path effectively. When entering this state, she starts screaming helpessly.
 var bool bEnableNewScreamMechanics;     // Sirens scream when they're in pain or when she hears the death rattle of nearby zeds. She stops screaming when a Fleshpound rages, a Scrake bumps into her, or taking blunt melee damage.

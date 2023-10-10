@@ -1,5 +1,5 @@
 /*
- * Modified Stalker Base Class. Holds a majority of the variables.
+ * Modified Stalker Base class. Holds a majority of the variables.
  *
  * Author       : theengineertcr
  * Home Repo    : https://github.com/theengineertcr/KFAdvZeds
@@ -19,16 +19,16 @@ var float LastUncloakTime;
 
 // Variables(Config)
 var bool bDisorientingAttacks;                          // Shake the targets view, causing them to be disoriented. Config bool.
-var bool bPiercingAttacks;                                // Pierce through the targets armour, dealing damage to their health. Config bool.
+var bool bPiercingAttacks;                              // Pierce through the targets armour, dealing damage to their health. Config bool.
 var bool bLeapIfSpotted;                                // Leap behind your target if they're facing towards you and you're close. Config bool.
-var bool bPreservativeDodge;                               // Dodge away from danger to preserve your life(nearby zed dies, grenades, taking damage). Config bool.
-var int StealthLevel;                                    // Stealth Level config. Affects both sounds and texture.
-var bool bIgnoreDifficulty;                                // Ignores difficulty and checks users preferences.
-var bool bDisableLeap;                                    // Used to temporarily disable the ability to leap if there are any nearby Stalkers.
+var bool bPreservativeDodge;                            // Dodge away from danger to preserve your life(nearby zed dies, grenades, taking damage). Config bool.
+var int StealthLevel;                                   // Stealth Level config. Affects both sounds and texture.
+var bool bIgnoreDifficulty;                             // Ignores difficulty and checks users preferences.
+var bool bDisableLeap;                                  // Used to temporarily disable the ability to leap if there are any nearby Stalkers.
 
 // Variables
-var vector DodgeSpot;                                    // What spot she's trying to dodge. Used to calculate to check whether she wants to dodge towards it, or away from it.
-var float JumpHeightMultiplier, JumpSpeedMultiplier;     // Multipliers used to dynamically change the Jump Height/Speed depending on what she's trying to dodge.
+var vector DodgeSpot;                                   // What spot she's trying to dodge. Used to calculate to check whether she wants to dodge towards it, or away from it.
+var float JumpHeightMultiplier, JumpSpeedMultiplier;    // Multipliers used to dynamically change the Jump Height/Speed depending on what she's trying to dodge.
 var float LastDodgeTime;                                // Last time she used her presevative dodge.
 var float FootStepRadius;
 
@@ -42,41 +42,39 @@ var bool bPouncing;
 
 var() vector RotMag;
 var() vector RotRate;
-var() float    RotTime;
+var() float RotTime;
 var() vector OffsetMag;
 var() vector OffsetRate;
-var() float    OffsetTime;
+var() float OffsetTime;
 
-function bool DoPounce()
-{
-    if ( bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || (Physics != PHYS_Walking) )
+function bool DoPounce() {
+    if (bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || Physics != PHYS_Walking) {
         return false;
+    }
 
-    Velocity = Normal(Controller.Target.Location-Location)*PounceSpeed;
+    Velocity = Normal(Controller.Target.Location - Location) * PounceSpeed;
     Velocity.Z = JumpZ * 1.75;
     SetPhysics(PHYS_Falling);
     SetCollision(false, false, false);
-    bPouncing=true;
+    bPouncing = true;
+
     return true;
 }
 
-function PrepareToPounce()
-{
-    Velocity = Normal(Location-Controller.Target.Location)*PounceSpeed*0.7;
+function PrepareToPounce() {
+    Velocity = Normal(Location - Controller.Target.Location) * PounceSpeed * 0.7;
     Velocity.Z = JumpZ * 0.5;
     SetPhysics(PHYS_Falling);
-    bPouncing=true;
+    bPouncing = true;
 }
 
-event Landed(vector HitNormal)
-{
-    bPouncing=false;
+event Landed(vector HitNormal) {
+    bPouncing = false;
     SetCollision(true, true, true);
     super.Landed(HitNormal);
 }
 
-defaultproperties
-{
+defaultproperties {
     bIgnoreDifficulty=false
     StealthLevel=0
     DrawScale=1.1
@@ -97,9 +95,9 @@ defaultproperties
     MeleeAnims(2)="JumpAttack"
     MeleeDamage=9
     damageForce=5000
-    ZombieDamType(0)=Class'KFMod.DamTypeSlashingAttack'
-    ZombieDamType(1)=Class'KFMod.DamTypeSlashingAttack'
-    ZombieDamType(2)=Class'KFMod.DamTypeSlashingAttack'
+    ZombieDamType(0)=class'KFMod.DamTypeSlashingAttack'
+    ZombieDamType(1)=class'KFMod.DamTypeSlashingAttack'
+    ZombieDamType(2)=class'KFMod.DamTypeSlashingAttack'
 
     RotMag=(X=5000.000000,Y=2500.000000,Z=2500.000000)
     RotRate=(X=-40000.000000,Y=15000.000000,Z=15000.000000)
@@ -109,7 +107,7 @@ defaultproperties
     OffsetTime=3.500000
 
     ScoringValue=15
-    SoundGroupClass=Class'KFMod.KFFemaleZombieSounds'
+    SoundGroupClass=class'KFMod.KFFemaleZombieSounds'
     IdleHeavyAnim="StalkerIdle"
     IdleRifleAnim="StalkerIdle"
     GroundSpeed=200.000000
@@ -142,7 +140,6 @@ defaultproperties
     SeveredHeadAttachScale=1.0
     SeveredLegAttachScale=0.7
     SeveredArmAttachScale=0.8
-
 
     MeleeRange=35.000000
     HeadHeight=2.5
