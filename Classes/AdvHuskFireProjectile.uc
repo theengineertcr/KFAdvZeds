@@ -7,3 +7,8 @@
  * Copyright    : 2023 theengineertcr
 */
 class AdvHuskFireProjectile extends HuskFireProjectile;
+
+/*
+    todo:   Apply Physics to Fireball so that it actually has drop over distance (see: explosive pound code)
+            Allow it to destroyed mid-air by gunfire
+ */
