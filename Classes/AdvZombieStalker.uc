@@ -15,10 +15,9 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 #exec OBJ LOAD FILE=KFX.utx
 #exec OBJ LOAD FILE=KF_BaseStalker.uax
 
-// TODO: Figure out a way to only disable Stalker's collision with
-// Other zeds and players, otherwise they're invincible while they-
-// -'re Leaping around.
 // TODO: Make stalkers flank around their target
+// this might never happen though :(
+// Fix Stalker double damage and armour piercing attack not replicating online
 
 //----------------------------------------------------------------------------
 // NOTE: All Variables are declared in the base class to eliminate hitching
@@ -66,12 +65,14 @@ simulated function PostBeginPlay() {
     super.PostBeginPlay();
 }
 
+function LandThump(){
+}
+
 function PlayChallengeSound() {
-    if ((Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) || StealthLevel <= 1 && bIgnoreDifficulty) {
+    if ((Level.Game.GameDifficulty <= 4.0 && !bIgnoreDifficulty) ||
+        StealthLevel <= 1 && bIgnoreDifficulty) {
         PlaySound(ChallengeSound[Rand(4)], SLOT_Talk, GruntVolume);
     }
-    // what was even this?!
-    // else return;
 }
 
 function ClawDamageTarget() {
@@ -91,9 +92,10 @@ function ClawDamageTarget() {
 
         // If were flanking our target, or were not exhausted from performing a leap attack, our strikes will disorient our foe's view.
         if (
-            (HumanTargetController != none && (AdvStalkerController(Controller).bFlanking || (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds)) &&
+            (HumanTargetController != none &&
             bDisorientingAttacks &&
-            (Level.Game.GameDifficulty >= 4.0 || bIgnoreDifficulty)
+            (Level.Game.GameDifficulty >= 4.0 || bIgnoreDifficulty) &&
+            (AdvStalkerController(Controller).bFlanking || (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds))
         ) {
             HumanTargetController.ShakeView(RotMag, RotRate, RotTime, OffsetMag, OffsetRate, OffsetTime);
         }
@@ -122,6 +124,33 @@ function RangedAttack(Actor A) {
     }
 }
 
+// Attack animation rate is slightly faster on higher difficulties and significantly when flanking
+// Drop your guard mid-wave, and you're probably going to be dead. Especially on HoE.
+simulated function int DoAnimAction( name AnimName ) {
+    if (
+        AnimName=='StalkerSpinAttack' || AnimName=='StalkerAttack1' || AnimName=='JumpAttack'
+    ) {
+        AnimBlendParams(1, 1.0, 0.0);
+        if (Level.Game.GameDifficulty < 4.0) {
+            PlayAnim(AnimName, 1.0,, 1);
+        } else if (Level.Game.GameDifficulty < 5.0) {
+            if (AdvStalkerController(Controller).bFlanking) {
+                PlayAnim(AnimName, 1.15,, 1);
+            } else {
+                PlayAnim(AnimName, 1.075,, 1);
+            }
+        } else if (Level.Game.GameDifficulty >= 5.0) {
+            if (AdvStalkerController(Controller).bFlanking) {
+                PlayAnim(AnimName, 1.30,, 1);
+            } else {
+                PlayAnim(AnimName, 1.15,, 1);
+            }
+        }
+        Return 1;
+    }
+    Return Super.DoAnimAction(AnimName);
+}
+
 function bool DoPounce() {
     if (
         bZapped ||
@@ -131,6 +160,7 @@ function bool DoPounce() {
         (Physics != PHYS_Walking) ||
         bDisableLeap ||
         !bLeapIfSpotted ||
+        AnimAction == 'KnockDown' ||
         bLeapIfSpotted && (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty)
     ) {
         return false;
@@ -149,7 +179,7 @@ function bool DoPounce() {
 }
 
 function PrepareToPounce() {
-    if (bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking)) {
+    if (bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking) || AnimAction == 'KnockDown') {
         return;
     }
 
@@ -165,6 +195,7 @@ function PrepareToPounce() {
 function PreservativeDodge() {
     if (
         bZapped ||
+        AnimAction == 'KnockDown' ||
         bIsCrouched ||
         bWantsToCrouch ||
         (Physics != PHYS_Walking) ||

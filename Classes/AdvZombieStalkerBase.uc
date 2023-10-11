@@ -48,30 +48,45 @@ var() vector OffsetRate;
 var() float OffsetTime;
 
 function bool DoPounce() {
-    if (bZapped || bIsCrouched || bWantsToCrouch || bShotAnim || Physics != PHYS_Walking) {
+    if (
+        bZapped ||
+        bIsCrouched ||
+        bWantsToCrouch ||
+        bShotAnim ||
+        (Physics != PHYS_Walking) ||
+        bDisableLeap ||
+        !bLeapIfSpotted ||
+        AnimAction == 'KnockDown' ||
+        bLeapIfSpotted && (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty)
+    ) {
         return false;
     }
 
     Velocity = Normal(Controller.Target.Location - Location) * PounceSpeed;
     Velocity.Z = JumpZ * 1.75;
     SetPhysics(PHYS_Falling);
-    SetCollision(false, false, false);
+    SetCollision(true, false, false);
+    SetAnimAction('HitReactionB');
     bPouncing = true;
-
     return true;
 }
 
 function PrepareToPounce() {
+    if (bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking) || AnimAction == 'KnockDown') {
+        return;
+    }
+
     Velocity = Normal(Location - Controller.Target.Location) * PounceSpeed * 0.7;
     Velocity.Z = JumpZ * 0.5;
     SetPhysics(PHYS_Falling);
     bPouncing = true;
 }
 
+// Call super from Pawn to prevent sound from playing when Stalker lands
 event Landed(vector HitNormal) {
     bPouncing = false;
     SetCollision(true, true, true);
-    super.Landed(HitNormal);
+    super(Pawn).Landed(HitNormal);
 }
 
 defaultproperties {
