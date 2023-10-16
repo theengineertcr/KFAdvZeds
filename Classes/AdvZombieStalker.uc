@@ -15,9 +15,14 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 #exec OBJ LOAD FILE=KFX.utx
 #exec OBJ LOAD FILE=KF_BaseStalker.uax
 
-// TODO: Make stalkers flank around their target
-// this might never happen though :(
-// Fix Stalker double damage and armour piercing attack not replicating online
+/*
+    TODO: Make stalkers flank around their target, but this might never happen :(
+    Though, having the Stalker randomly leap towards the side might work as an alternative
+
+    Remove speed increase when flanking and change it to be the following:
+    50% chance they either attack and move, or attack without decloaking(latter may not be added though).
+*/
+
 
 //----------------------------------------------------------------------------
 // NOTE: All Variables are declared in the base class to eliminate hitching
@@ -124,32 +129,31 @@ function RangedAttack(Actor A) {
     }
 }
 
-// Attack animation rate is slightly faster on higher difficulties and significantly when flanking
-// Drop your guard mid-wave, and you're probably going to be dead. Especially on HoE.
-simulated function int DoAnimAction( name AnimName ) {
-    if (
-        AnimName=='StalkerSpinAttack' || AnimName=='StalkerAttack1' || AnimName=='JumpAttack'
-    ) {
-        AnimBlendParams(1, 1.0, 0.0);
-        if (Level.Game.GameDifficulty < 4.0) {
-            PlayAnim(AnimName, 1.0,, 1);
-        } else if (Level.Game.GameDifficulty < 5.0) {
-            if (AdvStalkerController(Controller).bFlanking) {
-                PlayAnim(AnimName, 1.15,, 1);
-            } else {
-                PlayAnim(AnimName, 1.075,, 1);
-            }
-        } else if (Level.Game.GameDifficulty >= 5.0) {
-            if (AdvStalkerController(Controller).bFlanking) {
-                PlayAnim(AnimName, 1.30,, 1);
-            } else {
-                PlayAnim(AnimName, 1.15,, 1);
-            }
-        }
-        Return 1;
-    }
-    Return Super.DoAnimAction(AnimName);
-}
+// Repurpose this to allow the Stalker to move and attack as long as she's flanking
+//simulated function int DoAnimAction( name AnimName ) {
+//    if (
+//        AnimName=='StalkerSpinAttack' || AnimName=='StalkerAttack1' || AnimName=='JumpAttack'
+//    ) {
+//        AnimBlendParams(1, 1.0, 0.0);
+//        if (Level.Game.GameDifficulty < 4.0) {
+//            PlayAnim(AnimName, 1.0,, 1);
+//        } else if (Level.Game.GameDifficulty < 5.0) {
+//            if (AdvStalkerController(Controller).bFlanking) {
+//                PlayAnim(AnimName, 1.15,, 1);
+//            } else {
+//                PlayAnim(AnimName, 1.075,, 1);
+//            }
+//        } else if (Level.Game.GameDifficulty >= 5.0) {
+//            if (AdvStalkerController(Controller).bFlanking) {
+//                PlayAnim(AnimName, 1.30,, 1);
+//            } else {
+//                PlayAnim(AnimName, 1.15,, 1);
+//            }
+//        }
+//        Return 1;
+//    }
+//    Return Super.DoAnimAction(AnimName);
+//}
 
 function bool DoPounce() {
     if (
@@ -297,27 +301,27 @@ simulated function Tick(float DeltaTime) {
         if (Level.TimeSeconds > LeapCheckTime && bDisableLeap != false) {
             bDisableLeap = false;
         }
-    }
 
-    // If were behind our target, our attacks pierce through their armour and deal double damage
-    if (
-        AdvStalkerController(Controller).bFlanking &&
-        ZombieDamType[0] != class'DamTypeStalkerAPClaws' &&
-        bPiercingAttacks &&
-        (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty)
-    ) {
-        ZombieDamType[0] = class'DamTypeStalkerAPClaws';
-        ZombieDamType[1] = class'DamTypeStalkerAPClaws';
-        ZombieDamType[2] = class'DamTypeStalkerAPClaws';
-        MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage * 2, 1);
-    } else if (
-        !AdvStalkerController(Controller).bFlanking &&
-        ZombieDamType[0] != class'DamTypeSlashingAttack'
-    ) {
-        ZombieDamType[0] = class'DamTypeSlashingAttack';
-        ZombieDamType[1] = class'DamTypeSlashingAttack';
-        ZombieDamType[2] = class'DamTypeSlashingAttack';
-        MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage, 1);
+        // If were behind our target, our attacks pierce through their armour and deal double damage
+        if (
+            AdvStalkerController(Controller).bFlanking &&
+            ZombieDamType[0] != class'DamTypeStalkerAPClaws' &&
+            bPiercingAttacks &&
+            (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty)
+        ) {
+            ZombieDamType[0] = class'DamTypeStalkerAPClaws';
+            ZombieDamType[1] = class'DamTypeStalkerAPClaws';
+            ZombieDamType[2] = class'DamTypeStalkerAPClaws';
+            MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage * 2, 1);
+        } else if (
+            !AdvStalkerController(Controller).bFlanking &&
+            ZombieDamType[0] != class'DamTypeSlashingAttack'
+        ) {
+            ZombieDamType[0] = class'DamTypeSlashingAttack';
+            ZombieDamType[1] = class'DamTypeSlashingAttack';
+            ZombieDamType[2] = class'DamTypeSlashingAttack';
+            MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage, 1);
+        }
     }
 
     // Servers aren't intrested in this info.
@@ -564,6 +568,8 @@ function TakeDamage(
     class<DamageType> damageType,
     optional int HitIndex
 ) {
+    // This needs to be modified so that she dodges to either the left or right side towards the player instead of
+    // Using a random jump height/value based on the previous event within the tick function
     if (Damage < (HealthMax / 2.5) && (Level.Game.GameDifficulty > 4.0 && !bIgnoreDifficulty)) {
         PreservativeDodge();
     }
