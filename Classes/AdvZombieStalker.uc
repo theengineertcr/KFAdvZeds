@@ -298,6 +298,28 @@ simulated function Tick(float DeltaTime) {
             bDisableLeap = false;
         }
     }
+
+    // If were behind our target, our attacks pierce through their armour and deal double damage
+    if (
+        AdvStalkerController(Controller).bFlanking &&
+        ZombieDamType[0] != class'DamTypeStalkerAPClaws' &&
+        bPiercingAttacks &&
+        (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty)
+    ) {
+        ZombieDamType[0] = class'DamTypeStalkerAPClaws';
+        ZombieDamType[1] = class'DamTypeStalkerAPClaws';
+        ZombieDamType[2] = class'DamTypeStalkerAPClaws';
+        MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage * 2, 1);
+    } else if (
+        !AdvStalkerController(Controller).bFlanking &&
+        ZombieDamType[0] != class'DamTypeSlashingAttack'
+    ) {
+        ZombieDamType[0] = class'DamTypeSlashingAttack';
+        ZombieDamType[1] = class'DamTypeSlashingAttack';
+        ZombieDamType[2] = class'DamTypeSlashingAttack';
+        MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage, 1);
+    }
+
     // Servers aren't intrested in this info.
     if (Level.NetMode == NM_DedicatedServer) {
         return;
@@ -355,27 +377,6 @@ simulated function Tick(float DeltaTime) {
                 RealTimeShadow.Destroy();
             }
         }
-    }
-
-    // If were behind our target, our attacks pierce through their armour and deal double damage
-    if (
-        AdvStalkerController(Controller).bFlanking &&
-        ZombieDamType[0] != class'DamTypeStalkerAPClaws' &&
-        bPiercingAttacks &&
-        (Level.Game.GameDifficulty > 5.0 || bIgnoreDifficulty)
-    ) {
-        ZombieDamType[0] = class'DamTypeStalkerAPClaws';
-        ZombieDamType[1] = class'DamTypeStalkerAPClaws';
-        ZombieDamType[2] = class'DamTypeStalkerAPClaws';
-        MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage * 2, 1);
-    } else if (
-        !AdvStalkerController(Controller).bFlanking &&
-        ZombieDamType[0] != class'DamTypeSlashingAttack'
-    ) {
-        ZombieDamType[0] = class'DamTypeSlashingAttack';
-        ZombieDamType[1] = class'DamTypeSlashingAttack';
-        ZombieDamType[2] = class'DamTypeSlashingAttack';
-        MeleeDamage = Max(DifficultyDamageModifer() * default.MeleeDamage, 1);
     }
 }
 
