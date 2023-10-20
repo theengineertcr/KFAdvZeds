@@ -16,10 +16,14 @@ class AdvZombieHusk extends AdvZombieHuskBase
 // NOTE: All Variables are declared in the base class to eliminate hitching
 //----------------------------------------------------------------------------
 
-// TODO: Add an avoidmarker so zeds don't walk infront of a Husk(excludes big zeds and bloat)
+/* TODO
+        Add an avoidmarker that stretches out infront of this zed so others don't cross his line of fire(excludes big zeds)
+        Make immune to self damage from flamethrower
+        Flamethrower tendril explodes in a larger radius at closer range
+        Doesn't attack when Fleshpound/Scrake is near players
 
-// HuskFireProjClass to "AdvHuskFireProjClass"
-// Subsequent mentions have been modified as well
+ */
+
 var class<Projectile> AdvHuskFireProjClass;
 
 // New class variable for the flamethrower attack projectile
