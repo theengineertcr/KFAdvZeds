@@ -16,11 +16,14 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 #exec OBJ LOAD FILE=KF_BaseStalker.uax
 
 /*
-    TODO: Make stalkers flank around their target, but this might never happen :(
+    TODO: 
+    Make stalkers flank around their target, but this might never happen :(
     Though, having the Stalker randomly leap towards the side might work as an alternative
 
-    Remove speed increase when flanking and change it to be the following:
+    Remove animation speed increase when flanking and change it to be the following:
     50% chance they either attack and move, or attack without decloaking(latter may not be added though).
+    
+    Stalker's take half damage while leaping
 */
 
 
@@ -165,6 +168,7 @@ function bool DoPounce() {
         bDisableLeap ||
         !bLeapIfSpotted ||
         AnimAction == 'KnockDown' ||
+        bDecapitated ||
         bLeapIfSpotted && (Level.Game.GameDifficulty <= 5.0 && !bIgnoreDifficulty)
     ) {
         return false;
@@ -183,7 +187,7 @@ function bool DoPounce() {
 }
 
 function PrepareToPounce() {
-    if (bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking) || AnimAction == 'KnockDown') {
+    if (bZapped || bIsCrouched || bWantsToCrouch || (Physics != PHYS_Walking) || AnimAction == 'KnockDown' || bDecapitated) {
         return;
     }
 
@@ -202,6 +206,7 @@ function PreservativeDodge() {
         AnimAction == 'KnockDown' ||
         bIsCrouched ||
         bWantsToCrouch ||
+        bDecapitated ||
         (Physics != PHYS_Walking) ||
         LastDodgeTime + 8 > Level.TimeSeconds ||
         !bPreservativeDodge ||
@@ -568,10 +573,9 @@ function TakeDamage(
     class<DamageType> damageType,
     optional int HitIndex
 ) {
-    // This needs to be modified so that she dodges to either the left or right side towards the player instead of
-    // Using a random jump height/value based on the previous event within the tick function
-    if (Damage < (HealthMax / 2.5) && (Level.Game.GameDifficulty > 4.0 && !bIgnoreDifficulty)) {
-        PreservativeDodge();
+    if (Damage < (HealthMax / 2.5) && (Level.Game.GameDifficulty > 4.0 && !bIgnoreDifficulty) && (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds) {
+        DoPounce();
+        AdvStalkerController(Controller).LastPounceTime = Level.TimeSeconds;
     }
     super.TakeDamage(Damage, instigatedBy, hitlocation, momentum, damageType, HitIndex);
 }
