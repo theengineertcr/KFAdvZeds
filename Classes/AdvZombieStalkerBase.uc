@@ -31,6 +31,7 @@ var vector DodgeSpot;                                   // What spot she's tryin
 var float JumpHeightMultiplier, JumpSpeedMultiplier;    // Multipliers used to dynamically change the Jump Height/Speed depending on what she's trying to dodge.
 var float LastDodgeTime;                                // Last time she used her presevative dodge.
 var float FootStepRadius;
+var bool bHasLeaped;
 
 //-------------------------------------------------------------------------------
 // NOTE: All Code resides in the child class(this class was only created to

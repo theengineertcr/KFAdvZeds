@@ -15,17 +15,6 @@ class AdvZombieStalker extends AdvZombieStalkerBase
 #exec OBJ LOAD FILE=KFX.utx
 #exec OBJ LOAD FILE=KF_BaseStalker.uax
 
-/*
-    TODO: 
-    Make stalkers flank around their target, but this might never happen :(
-    Though, having the Stalker randomly leap towards the side might work as an alternative
-
-    Remove animation speed increase when flanking and change it to be the following:
-    50% chance they either attack and move, or attack without decloaking(latter may not be added though).
-    
-    Stalker's take half damage while leaping
-*/
-
 
 //----------------------------------------------------------------------------
 // NOTE: All Variables are declared in the base class to eliminate hitching
@@ -131,32 +120,6 @@ function RangedAttack(Actor A) {
         return;
     }
 }
-
-// Repurpose this to allow the Stalker to move and attack as long as she's flanking
-//simulated function int DoAnimAction( name AnimName ) {
-//    if (
-//        AnimName=='StalkerSpinAttack' || AnimName=='StalkerAttack1' || AnimName=='JumpAttack'
-//    ) {
-//        AnimBlendParams(1, 1.0, 0.0);
-//        if (Level.Game.GameDifficulty < 4.0) {
-//            PlayAnim(AnimName, 1.0,, 1);
-//        } else if (Level.Game.GameDifficulty < 5.0) {
-//            if (AdvStalkerController(Controller).bFlanking) {
-//                PlayAnim(AnimName, 1.15,, 1);
-//            } else {
-//                PlayAnim(AnimName, 1.075,, 1);
-//            }
-//        } else if (Level.Game.GameDifficulty >= 5.0) {
-//            if (AdvStalkerController(Controller).bFlanking) {
-//                PlayAnim(AnimName, 1.30,, 1);
-//            } else {
-//                PlayAnim(AnimName, 1.15,, 1);
-//            }
-//        }
-//        Return 1;
-//    }
-//    Return Super.DoAnimAction(AnimName);
-//}
 
 function bool DoPounce() {
     if (
@@ -276,9 +239,11 @@ simulated function Tick(float DeltaTime) {
     local float LeapCheckTime;
 
     if (Controller != none && !IsInState('ZombieDying')) {
+
+        // There's a grenade, get out of there!
         foreach CollidingActors(class'Nade', Grenade, 150, Location) {
             JumpHeightMultiplier = 1.25;
-            JumpSpeedMultiplier = 0.75;
+            JumpSpeedMultiplier = 1.0;
             if (Controller == none || IsInState('ZombieDying') || IsInState('GettingOutOfTheWayOfShot')) {
                 break;
             } else {
@@ -287,15 +252,22 @@ simulated function Tick(float DeltaTime) {
             PreservativeDodge();
         }
 
-        foreach CollidingActors(class'KFMonster', Monster, 300, Location) {
-            JumpHeightMultiplier = 0.5;
-            JumpSpeedMultiplier = 1.5;
-            DodgeSpot = Location - Monster.Location;
-            if (Monster.bPlayedDeath && Monster != Self) {
-                PreservativeDodge();
+        // If something right next to us dies, we know were in a dangerous position
+        // And need to get away quick! Can only be done once.
+        if (bHasLeaped == false) {
+            foreach CollidingActors(class'KFMonster', Monster, 300, Location) {
+                JumpHeightMultiplier = 0.5;
+                JumpSpeedMultiplier = 1.5;
+                DodgeSpot = Location - Monster.Location;
+                // Can't dodge while attacking anymore!
+                if (Monster.bPlayedDeath && Monster != Self && !bShotAnim) {
+                    PreservativeDodge();
+                    bHasLeaped = true;
+                }
             }
         }
 
+        // Don't leap if there are other Stalkers next to us and they're alive
         foreach CollidingActors(class'AdvZombieStalker', Stalker, 300, Location) {
             if (Stalker != Self && !Stalker.bPlayedDeath) {
                 bDisableLeap = true;
@@ -573,21 +545,136 @@ function TakeDamage(
     class<DamageType> damageType,
     optional int HitIndex
 ) {
+    // We took damage, dodge! - HoE+ Exclusive
     if (Damage < (HealthMax / 2.5) && (Level.Game.GameDifficulty > 4.0 && !bIgnoreDifficulty) && (AdvStalkerController(Controller).LastPounceTime + (12 - 1.5)) < Level.TimeSeconds) {
         DoPounce();
         AdvStalkerController(Controller).LastPounceTime = Level.TimeSeconds;
     }
+
+    // Were in mid-air, take half damage! - HoE+ Exclusive
+    if (Physics == PHYS_Falling && (Level.Game.GameDifficulty > 4.0 && !bIgnoreDifficulty)) {
+        Damage *= 0.5;
+    }
+
     super.TakeDamage(Damage, instigatedBy, hitlocation, momentum, damageType, HitIndex);
 }
 
-// Turn off the zapped behavior
-simulated function UnSetZappedBehavior() {
-    super.UnSetZappedBehavior();
+function PlayHit(
+    float Damage,
+    Pawn InstigatedBy,
+    vector HitLocation,
+    class<DamageType> damageType,
+    vector Momentum,
+    optional int HitIdx
+) {
+    local Vector HitNormal;
+    local Vector HitRay ;
+    local Name HitBone;
+    local float HitBoneDist;
+    local PlayerController PC;
+    local bool bShowEffects, bRecentHit;
+    local ProjectileBloodSplat BloodHit;
+    local rotator SplatRot;
 
-    // Handle getting the zed back cloaked if need be
-    if (Level.Netmode != NM_DedicatedServer) {
-        NextCheckTime = Level.TimeSeconds;
-        SetOverlayMaterial(none, 0.0f, true);
+    bRecentHit = Level.TimeSeconds - LastPainTime < 0.2;
+    LastDamageAmount = Damage;
+
+    // Call the modified version of the original Pawn playhit
+    OldPlayHit(Damage, InstigatedBy, HitLocation, DamageType, Momentum);
+
+    if (Damage <= 0) {
+        return;
+    }
+
+    // If stunned while in mid-air, just instantly die as a reward for accurate shooters
+    if (Health > 0 && Damage > (float(default.Health) / 1.5)) {
+        if (Physics == PHYS_Falling) {
+            KilledBy(LastDamagedBy);
+        } else {
+            FlipOver();
+        }
+    }
+
+    PC = PlayerController(Controller);
+    bShowEffects = (Level.NetMode != NM_Standalone) ||
+        (Level.TimeSeconds - LastRenderTime < 2.5) ||
+        ((InstigatedBy != none) && (PlayerController(InstigatedBy.Controller) != none)) ||
+        (PC != none);
+
+    if (!bShowEffects) {
+        return;
+    }
+
+    if (BurnDown > 0 && !bBurnified) {
+        bBurnified = true;
+    }
+
+    HitRay = vect(0, 0, 0);
+    if (InstigatedBy != none) {
+        HitRay = Normal(HitLocation - (InstigatedBy.Location + (vect(0, 0, 1) * InstigatedBy.EyeHeight)));
+    }
+
+    if (DamageType.default.bLocationalHit) {
+        CalcHitLoc(HitLocation, HitRay, HitBone, HitBoneDist);
+
+        // Do a zapped effect is someone shoots us and we're zapped to help show that the zed is taking more damage
+        if (bZapped && DamageType.name != 'DamTypeZEDGun') {
+            PlaySound(class'ZedGunProjectile'.default.ExplosionSound,, class'ZedGunProjectile'.default.ExplosionSoundVolume);
+            Spawn(class'ZedGunProjectile'.default.ExplosionEmitter,,, HitLocation + HitNormal * 20, rotator(HitNormal));
+        }
+    } else {
+        HitLocation = Location;
+        HitBone = FireRootBone;
+        HitBoneDist = 0.0f;
+    }
+
+    if (DamageType.default.bAlwaysSevers && DamageType.default.bSpecial) {
+        HitBone = 'head';
+    }
+
+    if (InstigatedBy != none) {
+        HitNormal = Normal(Normal(InstigatedBy.Location - HitLocation) + VRand() * 0.2 + vect(0, 0, 2.8));
+    } else {
+        HitNormal = Normal(Vect(0, 0, 1) + VRand() * 0.2 + vect(0, 0, 2.8));
+    }
+    // log("HitLocation "$Hitlocation);
+
+    if (DamageType.default.bCausesBlood && (!bRecentHit || (bRecentHit && (FRand() > 0.8)))) {
+        if (!class'GameInfo'.static.NoBlood() && !class'GameInfo'.static.UseLowGore()) {
+            if (Momentum != vect(0, 0, 0)) {
+                SplatRot = rotator(Normal(Momentum));
+            } else {
+                if (InstigatedBy != none) {
+                    SplatRot = rotator(Normal(Location - InstigatedBy.Location));
+                } else {
+                    SplatRot = rotator(Normal(Location - HitLocation));
+                }
+            }
+
+            BloodHit = Spawn(ProjectileBloodSplatClass, InstigatedBy,, HitLocation, SplatRot);
+        }
+    }
+
+    if (
+        InstigatedBy != none &&
+        InstigatedBy.PlayerReplicationInfo != none &&
+        KFSteamStatsAndAchievements(InstigatedBy.PlayerReplicationInfo.SteamStatsAndAchievements) != none &&
+        Health <= 0 &&
+        Damage > DamageType.default.HumanObliterationThreshhold &&
+        Damage != 1000 &&
+        (!bDecapitated || bPlayBrainSplash)
+    ) {
+        KFSteamStatsAndAchievements(InstigatedBy.PlayerReplicationInfo.SteamStatsAndAchievements).AddGibKill(class<DamTypeM79Grenade>(damageType) != none);
+
+        if (self.IsA('ZombieFleshPound')) {
+            KFSteamStatsAndAchievements(InstigatedBy.PlayerReplicationInfo.SteamStatsAndAchievements).AddFleshpoundGibKill();
+        }
+    }
+
+    DoDamageFX(HitBone, Damage, DamageType, Rotator(HitNormal));
+    // additional check in case shield absorbed
+    if (DamageType.default.DamageOverlayMaterial != none && Damage > 0) {
+        SetOverlayMaterial(DamageType.default.DamageOverlayMaterial, DamageType.default.DamageOverlayTime, false);
     }
 }
 
