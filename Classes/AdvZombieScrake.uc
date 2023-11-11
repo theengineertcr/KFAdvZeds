@@ -211,15 +211,12 @@ function bool MeleeDamageTarget(int hitdamage, vector pushdir) {
             }
         }
 
-        if ( KFHumanPawn(Controller.Target) != none )
-        {
+        if ( KFHumanPawn(Controller.Target) != none ) {
             //TODO - line below was KFPawn. Does this whole block need to be KFPawn, or is it OK as KFHumanPawn?
             KFHumanPawn(Controller.Target).TakeDamage(hitdamage, Instigator ,HitLocation,pushdir, CurrentDamType); //class 'KFmod.ZombieMeleeDamage');
 
-            if (KFHumanPawn(Controller.Target).Health <=0)
-            {
-                if ( !class'GameInfo'.static.UseLowGore() )
-                {
+            if (KFHumanPawn(Controller.Target).Health <=0) {
+                if ( !class'GameInfo'.static.UseLowGore() ) {
                     BloodHit = Spawn(class'KFMod.FeedingSpray',self,,Controller.Target.Location,rotator(pushdir));	 //
                     KFHumanPawn(Controller.Target).SpawnGibs(rotator(pushdir), 1);
                     TearBone=KFPawn(Controller.Target).GetClosestBone(HitLocation,Velocity,dummy);
@@ -227,8 +224,7 @@ function bool MeleeDamageTarget(int hitdamage, vector pushdir) {
                 }
 
                 // Give us some Health back
-                if (Health <= (1.0-FeedThreshold)*HealthMax)
-                {
+                if (Health <= (1.0-FeedThreshold)*HealthMax) {
                     Health += FeedThreshold*HealthMax * Health/HealthMax;
                 }
             }

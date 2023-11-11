@@ -38,23 +38,23 @@ function bool FireWeaponAt(Actor A) {
         return false;
     }
 
-    if (VSize(Pawn.Location - A.Location) < 300) {
-        aFacing = Normal(Vector(Pawn.Rotation));
-        TargetFacing = Normal(Vector(A.Rotation));
 
-        // Get the vector from A to B
-        aToB = A.Location - Pawn.Location;
-        BToa = Pawn.Location - A.Location;
+    aFacing = Normal(Vector(Pawn.Rotation));
+    TargetFacing = Normal(Vector(A.Rotation));
 
-        RelativeDir = aFacing dot aToB;
-        TargetRelativeDir = TargetFacing dot BToa;
+    // Get the vector from A to B
+    aToB = A.Location - Pawn.Location;
+    BToa = Pawn.Location - A.Location;
 
-        if (RelativeDir < -15) {
-            bFacingTarget = false;
-        } else {
-            bFacingTarget = true;
-        }
+    RelativeDir = aFacing dot aToB;
+    TargetRelativeDir = TargetFacing dot BToa;
+
+    if (RelativeDir < -15) {
+        bFacingTarget = false;
+    } else {
+        bFacingTarget = true;
     }
+    
 
     if (CanAttack(A)) {
         Target = A;
