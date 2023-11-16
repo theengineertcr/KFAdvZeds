@@ -132,14 +132,13 @@ simulated function UpdateExhaustEmitter() {
 
 simulated function Tick(float DeltaTime) {
     super.Tick(DeltaTime);
-
     UpdateExhaustEmitter();
 }
 
 function RangedAttack(Actor A) {
     if ( bShotAnim || Physics == PHYS_Swimming)
         return;
-    else if ( CanAttack(A) ) {
+    else if ( CanAttack(A) && AdvSawZombieController(Controller).bFacingTarget) {
         bShotAnim = true;
         SetAnimAction(MeleeAnims[Rand(2)]);
         CurrentDamType = ZombieDamType[0];
@@ -180,7 +179,7 @@ function bool MeleeDamageTarget(int hitdamage, vector pushdir) {
         Return True;
     }
 
-    if (!AdvSawZombieController(Controller).bFacingTarget) {
+    if (AdvSawZombieController(Controller).RelativeDir < 30) {
         return false;
     }
     /*ClearStayingDebugLines();
@@ -665,6 +664,6 @@ defaultproperties {
     // NOTE: Most Default Properties are set in the base class to eliminate hitching
     //-------------------------------------------------------------------------------
 
-    EventClasses(0)="KFChar.ZombieScrake_STANDARD"
+    EventClasses(0)="KFAdvZeds.AdvZombieScrake_S"
     ControllerClass=Class'KFAdvZeds.AdvSawZombieController'
 }

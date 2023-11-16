@@ -4,6 +4,7 @@ class AdvSawZombieController extends KFMonsterController;
 
 var	bool	bDoneSpottedCheck;
 var bool    bFacingTarget;
+var float RelativeDir;
 
 state ZombieHunt {
     event SeePlayer(Pawn SeenPlayer) {
@@ -25,42 +26,6 @@ function TimedFireWeaponAtEnemy() {
     if ( (Enemy == None) || FireWeaponAt(Enemy) )
         SetCombatTimer();
     else SetTimer(0.01, True);
-}
-
-function bool FireWeaponAt(Actor A) {
-    local vector aFacing, aToB, TargetFacing, BToa;
-    local float RelativeDir, TargetRelativeDir;
-
-    if (A == none) {
-        A = Enemy;
-    }
-    if (A == none || Focus != A) {
-        return false;
-    }
-
-
-    aFacing = Normal(Vector(Pawn.Rotation));
-    TargetFacing = Normal(Vector(A.Rotation));
-
-    // Get the vector from A to B
-    aToB = A.Location - Pawn.Location;
-    BToa = Pawn.Location - A.Location;
-
-    RelativeDir = aFacing dot aToB;
-    TargetRelativeDir = TargetFacing dot BToa;
-
-    if (RelativeDir < -15) {
-        bFacingTarget = false;
-    } else {
-        bFacingTarget = true;
-    }
-    
-
-    if (CanAttack(A)) {
-        Target = A;
-        Monster(Pawn).RangedAttack(Target);
-    }
-    return false;
 }
 
 state ZombieCharge {
@@ -90,6 +55,41 @@ Moving:
     WhatToDoNext(17);
     if ( bSoaking )
         SoakStop("STUCK IN CHARGING!");
+}
+
+function bool FireWeaponAt(Actor A) {
+    if (A == none) {
+        A = Enemy;
+    }
+    if (A == none || Focus != A) {
+        return false;
+    }
+    
+    Monster(Pawn).RangedAttack(Target);
+    return false;
+}
+
+function tick(float DeltaTime) {
+    local vector aFacing, aToB, TargetFacing, BToa;
+    local float TargetRelativeDir;
+
+    super.tick(DeltaTime);
+    
+    aFacing = Normal(Vector(Pawn.Rotation));
+    TargetFacing = Normal(Vector(Enemy.Rotation));
+
+    // Get the vector from A to B
+    aToB = Enemy.Location - Pawn.Location;
+    BToa = Pawn.Location - Enemy.Location;
+
+    RelativeDir = aFacing dot aToB;
+    TargetRelativeDir = TargetFacing dot BToa;
+    
+    if (RelativeDir < 30) {
+        bFacingTarget = false;
+    } else {
+        bFacingTarget = true;
+    }
 }
 
 defaultproperties {
