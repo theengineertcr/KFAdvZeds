@@ -9,11 +9,17 @@
 class AdvZombieScrake extends AdvZombieScrakeBase
     abstract;
 
-// Base changes TODO:
-// Scrake melee attack = instant kill
-// Scrake doesn't turn to face target while melee attacking, allowing flanking from speedy perks.
-// Scrake continues moving while melee attacking but can't rotate during it
-// Scrake laughs after killing his target(modify pat anims) (Maybe?)
+/* TODO
+    - Melee attack is an instant kill
+    - Can only deal damage IF his target is infront of him
+    - Starts out with slow movement speed until he spots his first target, which then he passively
+      Gains a speed increase until walks as fast as a player running with a knife
+    - Once he has a target, he will not change it until they are dead
+      On HoE, if target breaks line of sight for too long, rage
+    - When raged, bumps zeds out of the way + starts spawning avoidlocations infront of him
+    - Slowly turns to face target while melee attacking, allowing flanking from speedy perks
+    - Has a grace period where he derages temporarily after killing a player that lasts 15 seconds
+ */
 
 #exec OBJ LOAD FILE=PlayerSounds.uax
 
