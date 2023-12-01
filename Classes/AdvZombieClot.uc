@@ -19,6 +19,24 @@ var int  GrabLevel;                     // How effective their grabbing is. 0 = 
 var Rotator PlayerRot;
 var KFPawn KFP;
 
+var     KFPawn  DisabledPawn;           // The pawn that has been disabled by this zombie's grapple
+var     bool    bGrappling;             // This zombie is grappling someone
+var     float   GrappleEndTime;         // When the current grapple should be over
+var()   float   GrappleDuration;        // How long a grapple by this zombie should last
+
+var	float	ClotGrabMessageDelay;	// Amount of time between a player saying "I've been grabbed" message
+
+replication{
+    reliable if(bNetDirty && Role == ROLE_Authority)
+        bGrappling;
+}
+
+function BreakGrapple(){
+    if( DisabledPawn != none ){
+         DisabledPawn.bMovementDisabled = false;
+         DisabledPawn = none;
+    }
+}
 
 function ClawDamageTarget(){
     local vector PushDir;
@@ -191,4 +209,89 @@ static simulated function PreCacheMaterials(LevelInfo myLevel) {
 
 defaultproperties {
     EventClasses(0)="KFChar.ZombieClot_STANDARD"
+    DetachedArmClass="SeveredArmClot"
+    DetachedLegClass="SeveredLegClot"
+    DetachedHeadClass="SeveredHeadClot"
+
+    Mesh=SkeletalMesh'KF_Freaks_Trip.CLOT_Freak'
+
+    Skins(0)=Combiner'KF_Specimens_Trip_T.clot_cmb'
+
+    AmbientSound=Sound'KF_BaseClot.Clot_Idle1Loop'//Sound'KFPlayerSound.Zombiesbreath'//
+    MoanVoice=Sound'KF_EnemiesFinalSnd.Clot_Talk'
+    JumpSound=Sound'KF_EnemiesFinalSnd.Clot_Jump'
+    MeleeAttackHitSound=sound'KF_EnemiesFinalSnd.Clot_HitPlayer'
+
+    HitSound(0)=Sound'KF_EnemiesFinalSnd.Clot_Pain'
+    DeathSound(0)=Sound'KF_EnemiesFinalSnd.Clot_Death'
+
+    ChallengeSound(0)=Sound'KF_EnemiesFinalSnd.Clot_Challenge'
+    ChallengeSound(1)=Sound'KF_EnemiesFinalSnd.Clot_Challenge'
+    ChallengeSound(2)=Sound'KF_EnemiesFinalSnd.Clot_Challenge'
+    ChallengeSound(3)=Sound'KF_EnemiesFinalSnd.Clot_Challenge'
+    DrawScale=1.1
+    Prepivot=(Z=5.0)
+
+    bUseExtendedCollision=true
+    ColOffset=(Z=48)
+    ColRadius=25
+    ColHeight=5
+
+    ExtCollAttachBoneName="Collision_Attach"
+
+    BurningWalkFAnims(0)="WalkF_Fire"
+    BurningWalkFAnims(1)="WalkF_Fire"
+    BurningWalkFAnims(2)="WalkF_Fire"
+
+    MeleeAnims(0)="ClotGrapple"
+    MeleeAnims(1)="ClotGrappleTwo"
+    MeleeAnims(2)="ClotGrappleThree"
+
+    damageForce=5000
+    KFRagdollName="Clot_Trip"
+
+    ScoringValue=7
+
+    MovementAnims(0)="ClotWalk"
+    WalkAnims(0)="ClotWalk"
+    WalkAnims(1)="ClotWalk"
+    WalkAnims(2)="ClotWalk"
+    WalkAnims(3)="ClotWalk"
+    SoundRadius=80
+    SoundVolume=50
+
+    CollisionRadius=26.000000
+    RotationRate=(Yaw=45000,Roll=0)
+
+    GroundSpeed=125.000000
+    WaterSpeed=125.000000
+    MeleeDamage=6
+    Health=180//130//200
+    HealthMax=180//130//200
+    HeadHealth=58//35
+    JumpZ=340.000000
+
+    MeleeRange=25.0//30.000000
+
+    PuntAnim="ClotPunt"
+
+    bCannibal = true
+    MenuName="Clot"
+
+    AdditionalWalkAnims(0) = "ClotWalk2"
+
+    Intelligence=BRAINS_Mammal
+    GrappleDuration=1.5
+
+    SeveredHeadAttachScale=0.8
+    SeveredLegAttachScale=0.8
+    SeveredArmAttachScale=0.8
+
+    ClotGrabMessageDelay=12.0
+    HeadHeight=2.0
+    HeadScale=1.1
+    CrispUpThreshhold=9
+    OnlineHeadshotOffset=(X=20,Y=0,Z=37)
+    OnlineHeadshotScale=1.3
+    MotionDetectorThreat=0.34
 }
