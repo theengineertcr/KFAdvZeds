@@ -25,7 +25,7 @@ simulated function Explode(vector HitLocation, vector HitNormal) {
 
     if( Role == ROLE_Authority ) {
         bNeedToPlayEffects = true;
-        // 
+        // This needs to be louder
         AmbientSound=Sound'Frightyard_snd.Ambient.ENV_Bile_LP';
     }
 
@@ -149,7 +149,7 @@ defaultproperties{
     CollisionRadius=2.000000
     CollisionHeight=2.000000
     bUseCollisionStaticMesh=False
-    StaticMesh=StaticMesh'kf_gore_trip_sm.puke.puke_chunk'//Mesh'XWeapons_rc.GoopMesh' KFTODO: Replace this
+    StaticMesh=StaticMesh'kf_gore_trip_sm.puke.puke_chunk'
     ImpactSound=Sound'KF_EnemiesFinalSnd.Bloat_AcidSplash'
     bBlockHitPointTraces=false
     ExplosionSound=None

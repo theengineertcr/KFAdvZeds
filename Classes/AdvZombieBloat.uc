@@ -6,8 +6,7 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-class AdvZombieBloat extends AdvZombieBloatBase
-    abstract;
+class AdvZombieBloat extends KFMonster;
 
 var bool bEnableAbsorption;           // Stops projectiles and hitscan weapons with penetration from going through him. Does not affect damage.
 var bool bEnableNewBurnBehaviour;     // When Bloats die while on fire, their body explodes into flames and ignites anyone nearby.
@@ -15,11 +14,15 @@ var bool bEnableUsedAsCover;          // Zeds use him as a cover. Locked to Hard
 var bool bEnableHeadlessBileSpray;    // While headless, Bloats spray bile from their neck until they die. Locked to Suicidal and above.
 var bool bEnableBileRemains;          // Bile on the floor is equivalent to standing in lava, burning players to death. Locked to HoE and above.
 
-
 var float RestunTime;
 var bool bStunAllowed;
 var class<FleshHitEmitter> BileExplosion;
 var class<FleshHitEmitter> BileExplosionHeadless;
+
+var BileJet BloatJet;
+var bool bPlayBileSplash;
+var bool bMovingPukeAttack;
+var float RunAttackTimeout;
 
 function bool FlipOver() {
     return false;
@@ -28,7 +31,6 @@ function bool FlipOver() {
 simulated function PostBeginPlay() {
     super.PostBeginPlay();
 }
-
 
 // don't interrupt the bloat while he is puking
 simulated function bool HitCanInterruptAction() {
@@ -571,9 +573,99 @@ static simulated function PreCacheMaterials(LevelInfo myLevel) {
 }
 
 defaultproperties {
-    //-------------------------------------------------------------------------------
-    // NOTE: Most Default Properties are set in the base class to eliminate hitching
-    //-------------------------------------------------------------------------------
+    DetachedArmClass=class'SeveredArmBloat'
+    DetachedLegClass=class'SeveredLegBloat'
+    DetachedHeadClass=class'SeveredHeadBloat'
 
-    EventClasses(0)="KFAdvZeds.AdvZombieBloat_S"
+    BileExplosion=class'KFMod.BileExplosion'
+    BileExplosionHeadless=class'KFMod.BileExplosionHeadless'
+
+    Mesh=SkeletalMesh'KF_Freaks_Trip.Bloat_Freak'
+
+    Skins(0)=Combiner'KF_Specimens_Trip_T.bloat_cmb'
+
+    AmbientSound=Sound'KF_BaseBloat.Bloat_Idle1Loop'
+    MoanVoice=Sound'KF_EnemiesFinalSnd.Bloat_Talk'
+    JumpSound=Sound'KF_EnemiesFinalSnd.Bloat_Jump'
+    MeleeAttackHitSound=sound'KF_EnemiesFinalSnd.Bloat_HitPlayer'
+
+    HitSound(0)=Sound'KF_EnemiesFinalSnd.Bloat_Pain'
+    DeathSound(0)=Sound'KF_EnemiesFinalSnd.Bloat_Death'
+
+    ChallengeSound(0)=Sound'KF_EnemiesFinalSnd.Bloat_Challenge'
+    ChallengeSound(1)=Sound'KF_EnemiesFinalSnd.Bloat_Challenge'
+    ChallengeSound(2)=Sound'KF_EnemiesFinalSnd.Bloat_Challenge'
+    ChallengeSound(3)=Sound'KF_EnemiesFinalSnd.Bloat_Challenge'
+    DrawScale=1.075
+    Prepivot=(Z=5.0)
+
+    MeleeAnims(0)="BloatChop2"
+    MeleeAnims(1)="BloatChop2"
+    MeleeAnims(2)="BloatChop2"
+    damageForce=70000
+    bFatAss=True
+    KFRagdollName="Bloat_Trip"
+    PuntAnim="BloatPunt"
+
+    AmmunitionClass=Class'KFMod.BZombieAmmo'
+    ScoringValue=17
+    IdleHeavyAnim="BloatIdle"
+    IdleRifleAnim="BloatIdle"
+    MeleeRange=30.0//55.000000
+
+    MovementAnims(0)="WalkBloat"
+    MovementAnims(1)="WalkBloat"
+    WalkAnims(0)="WalkBloat"
+    WalkAnims(1)="WalkBloat"
+    WalkAnims(2)="WalkBloat"
+    WalkAnims(3)="WalkBloat"
+    IdleCrouchAnim="BloatIdle"
+    IdleWeaponAnim="BloatIdle"
+    IdleRestAnim="BloatIdle"
+    //SoundRadius=2.5
+    AmbientSoundScaling=8.0
+    SoundVolume=200
+    AmbientGlow=0
+
+    Mass=400.000000
+    RotationRate=(Yaw=45000,Roll=0)
+
+    GroundSpeed=75.0//105.000000
+    WaterSpeed=102.000000
+    Health=525//800
+    HealthMax=525
+    PlayerCountHealthScale=0.25
+    PlayerNumHeadHealthScale=0.0
+    HeadHealth=25
+    MeleeDamage=14
+    JumpZ=320.000000
+
+    bCannibal = False // No animation for him.
+    MenuName="Bloat"
+
+    CollisionRadius=26.000000
+    CollisionHeight=44
+    bCanDistanceAttackDoors=True
+    Intelligence=BRAINS_Stupid
+    bUseExtendedCollision=True
+    ColOffset=(Z=60)//(Z=42)
+    ColRadius=27
+    ColHeight=22//40
+    ZombieFlag=1
+
+    SeveredHeadAttachScale=1.7
+    SeveredLegAttachScale=1.3
+    SeveredArmAttachScale=1.1
+
+    BleedOutDuration=6.0
+    HeadHeight=2.5
+    HeadScale=1.5
+    OnlineHeadshotOffset=(X=5,Y=0,Z=70)
+    OnlineHeadshotScale=1.5
+    MotionDetectorThreat=1.0
+
+    ZapThreshold=0.5
+    ZappedDamageMod=1.5
+    bHarpoonToHeadStuns=true
+    bHarpoonToBodyStuns=false
 }
