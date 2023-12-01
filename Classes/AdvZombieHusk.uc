@@ -6,15 +6,10 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
 */
-class AdvZombieHusk extends AdvZombieHuskBase
-    abstract;
+class AdvZombieHusk extends KFMonster;
 
 // Package Loading
 #exec OBJ LOAD FILE=KFAdvZeds_A.ukx
-
-//----------------------------------------------------------------------------
-// NOTE: All Variables are declared in the base class to eliminate hitching
-//----------------------------------------------------------------------------
 
 /* TODO
         Add an avoidmarker that stretches out infront of this zed so others don't cross his line of fire(excludes big zeds)
@@ -40,6 +35,13 @@ var bool bIgnoreDifficulty;
 //cancelled/might not get added
 // var bool bEnableHuskBloatComboAttack;// another take on the suicide bomb attack, but instead of the husk doing it himself, the bloat is the one going boom.
 // var bool bEnableHuskTacticalSmoke;   // Husks will deliberately light the floor below them on fire, causing a smoke screen and lighting themselves on fire. Used when there's a big group of zeds surrounding the Husk.
+
+var     float   NextFireProjectileTime; // Track when we will fire again
+var()   float   ProjectileFireInterval; // How often to fire the fire projectile
+var()   float   BurnDamageScale;        // How much to reduce fire damage for the Husk
+var bool bMovingRangedAttack;            // Whether to move while performing a ranged attack
+var float RunAttackTimeout;
+
 
 simulated function BeginPlay() {
     //Link the mesh to our custom animations
@@ -688,11 +690,104 @@ static simulated function PreCacheMaterials(LevelInfo myLevel) {
 }
 
 defaultproperties {
-    //-------------------------------------------------------------------------------
-    // NOTE: Most default Properties are set in the base class to eliminate hitching
-    //-------------------------------------------------------------------------------
-    EventClasses(0)="KFAdvZeds.AdvZombieHusk_S"
     AdvHuskFireProjClass=class'AdvHuskFireProjectile'
     AdvHuskFlameProjClass=class'AdvHuskFlameProjectile'
     ControllerClass=class'AdvHuskZombieController'
+    DetachedArmClass=class'SeveredArmHusk'
+    DetachedSpecialArmClass=class'SeveredArmHuskGun'
+    DetachedLegClass=class'SeveredLegHusk'
+    DetachedHeadClass=class'SeveredHeadHusk'
+
+    Mesh=SkeletalMesh'KF_Freaks2_Trip.Burns_Freak'
+
+    Skins(0)=Texture'KF_Specimens_Trip_T_Two.burns.burns_tatters'
+
+    AmbientSound=Sound'KF_BaseHusk.Husk_IdleLoop'
+    MoanVoice=Sound'KF_EnemiesFinalSnd.Husk_Talk'
+    JumpSound=Sound'KF_EnemiesFinalSnd.Husk_Jump'
+    MeleeAttackHitSound=sound'KF_EnemiesFinalSnd.Bloat_HitPlayer'
+
+    HitSound(0)=Sound'KF_EnemiesFinalSnd.Husk_Pain'
+    DeathSound(0)=Sound'KF_EnemiesFinalSnd.Husk_Death'
+
+    ChallengeSound(0)=Sound'KF_EnemiesFinalSnd.Husk_Challenge'
+    ChallengeSound(1)=Sound'KF_EnemiesFinalSnd.Husk_Challenge'
+    ChallengeSound(2)=Sound'KF_EnemiesFinalSnd.Husk_Challenge'
+    ChallengeSound(3)=Sound'KF_EnemiesFinalSnd.Husk_Challenge'
+    DrawScale=1.4
+    Prepivot=(Z=22.0)
+
+    MeleeAnims(0)="Strike"
+    MeleeAnims(1)="Strike"
+    MeleeAnims(2)="Strike"
+    damageForce=70000
+    bFatAss=true
+    KFRagdollName="Burns_Trip"
+
+    AmmunitionClass=class'KFMod.BZombieAmmo'
+    ScoringValue=17
+    IdleHeavyAnim="Idle"
+    IdleRifleAnim="Idle"
+    MeleeRange=30.0//55.000000
+
+    MovementAnims(0)="WalkF"
+    MovementAnims(1)="WalkB"
+    MovementAnims(2)="WalkL"
+    MovementAnims(3)="WalkR"
+    WalkAnims(0)="WalkF"
+    WalkAnims(1)="WalkB"
+    WalkAnims(2)="WalkL"
+    WalkAnims(3)="WalkR"
+    IdleCrouchAnim="Idle"
+    IdleWeaponAnim="Idle"
+    IdleRestAnim="Idle"
+    //SoundRadius=2.5
+    AmbientSoundScaling=8.0
+    SoundVolume=200
+
+    AmbientGlow=0
+
+    Mass=400.000000
+    RotationRate=(Yaw=45000,Roll=0)
+
+    Skins(1)=Shader'KF_Specimens_Trip_T_Two.burns.burns_shdr'
+
+    GroundSpeed=115.0
+    WaterSpeed=102.000000
+    Health=600//700
+    HealthMax=600//700
+    PlayerCountHealthScale=0.10//0.15
+    PlayerNumHeadHealthScale=0.05
+    HeadHealth=200//250
+    MeleeDamage=15
+    JumpZ=320.000000
+
+    bCannibal = false // No animation for him.
+    MenuName="Husk"
+
+    CollisionRadius=26.000000
+    CollisionHeight=44
+    bCanDistanceAttackDoors=true
+    Intelligence=BRAINS_Mammal
+    bUseExtendedCollision=true
+    ColOffset=(Z=36)
+    ColRadius=30
+    ColHeight=33
+    ZombieFlag=1
+
+    SeveredHeadAttachScale=0.9
+    SeveredLegAttachScale=0.9
+    SeveredArmAttachScale=0.9
+
+    BleedOutDuration=6.0
+    HeadHeight=1.0
+    HeadScale=1.5
+    ProjectileFireInterval=5.5
+    BurnDamageScale=0.25
+    OnlineHeadshotOffset=(X=20,Y=0,Z=55)
+    OnlineHeadshotScale=1.0
+    MotionDetectorThreat=1.0
+    ZapThreshold=0.75
+    bHarpoonToHeadStuns=true
+    bHarpoonToBodyStuns=false
 }

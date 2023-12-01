@@ -98,9 +98,9 @@ event PostBeginPlay() {
     }
 
     // Husk Configs
-    class'AdvZombieHusk_S'.default.bEnableHuskMoveAndShoot = bEnableHuskMoveAndShoot;
-    class'AdvZombieHusk_S'.default.bEnableHuskFlamethrower = bEnableHuskFlamethrower;
-    class'AdvZombieHusk_S'.default.bEnableHuskFlameAndMove = bEnableHuskFlameAndMove;
+    class'AdvZombieHusk'.default.bEnableHuskMoveAndShoot = bEnableHuskMoveAndShoot;
+    class'AdvZombieHusk'.default.bEnableHuskFlamethrower = bEnableHuskFlamethrower;
+    class'AdvZombieHusk'.default.bEnableHuskFlameAndMove = bEnableHuskFlameAndMove;
     // Stalker Configs
     class'AdvZombieStalker'.default.bDisorientingAttacks = bEnableStalkerDisorientingAttacks;
     class'AdvZombieStalker'.default.bPiercingAttacks     = bEnableStalkerPiercingAttacks;
@@ -120,7 +120,7 @@ event PostBeginPlay() {
     // General Configs
     if (bIgnoreDifficulty) {
         class'AdvZombieStalker'.default.bIgnoreDifficulty = bIgnoreDifficulty;
-        class'AdvZombieHusk_S'.default.bIgnoreDifficulty = bIgnoreDifficulty;
+        class'AdvZombieHusk'.default.bIgnoreDifficulty = bIgnoreDifficulty;
     }
 }
 
@@ -189,7 +189,7 @@ defaultproperties {
     RemoteRole=ROLE_SimulatedProxy
     bAddToServerPackages=true
 
-    replacementArray(0)=(oldClass="KFChar.ZombieHusk",newClass="KFAdvZeds.AdvZombieHusk_S")
+    replacementArray(0)=(oldClass="KFChar.ZombieHusk",newClass="KFAdvZeds.AdvZombieHusk")
     replacementArray(1)=(oldClass="KFChar.ZombieStalker",newClass="KFAdvZeds.AdvZombieStalker")
 
     bEnableHuskMoveAndShoot=true

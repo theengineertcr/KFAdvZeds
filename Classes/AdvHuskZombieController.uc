@@ -18,8 +18,6 @@ function bool FireWeaponAt(Actor A) {
     }
     Target = A;
 
-    // "ZombieHusk to "AdvZombieHusk"
-    // Otherwise, delay wouldn't apply and they'd endlessly shoot
     if (
         (VSize(A.Location - Pawn.Location) >= AdvZombieHusk(Pawn).MeleeRange + Pawn.CollisionRadius + Target.CollisionRadius) &&
         AdvZombieHusk(Pawn).NextFireProjectileTime - Level.TimeSeconds > 0
