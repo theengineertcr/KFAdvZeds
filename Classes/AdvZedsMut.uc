@@ -41,7 +41,7 @@ replication {
 
 simulated function PostNetBeginPlay() {
     RepStalkerStealthLevel = clamp(RepStalkerStealthLevel, 0, 3);
-    class'AdvZombieStalker_S'.default.StealthLevel = RepStalkerStealthLevel;
+    class'AdvZombieStalker'.default.StealthLevel = RepStalkerStealthLevel;
 }
 
 event PostBeginPlay() {
@@ -91,7 +91,7 @@ event PostBeginPlay() {
     replaceSpecialSquad(KF.MonsterCollection.default.FinalSquads);
 
     // KF.MonsterCollection.default.EndGameBossClass = PLACEHOLDER;
-    KF.MonsterCollection.default.FallbackMonsterClass = string(class'AdvZombieStalker_S');
+    KF.MonsterCollection.default.FallbackMonsterClass = string(class'AdvZombieStalker');
 
     for (i= 0; i < KF.SpecialEventMonsterCollections.Length; i++) {
         KF.SpecialEventMonsterCollections[i] = KF.MonsterCollection;
@@ -102,10 +102,10 @@ event PostBeginPlay() {
     class'AdvZombieHusk_S'.default.bEnableHuskFlamethrower = bEnableHuskFlamethrower;
     class'AdvZombieHusk_S'.default.bEnableHuskFlameAndMove = bEnableHuskFlameAndMove;
     // Stalker Configs
-    class'AdvZombieStalker_S'.default.bDisorientingAttacks = bEnableStalkerDisorientingAttacks;
-    class'AdvZombieStalker_S'.default.bPiercingAttacks     = bEnableStalkerPiercingAttacks;
-    class'AdvZombieStalker_S'.default.bLeapIfSpotted       = bEnableStalkerLeapIfSpotted;
-    class'AdvZombieStalker_S'.default.bPreservativeDodge   = bEnableStalkerPreservativeDodge;
+    class'AdvZombieStalker'.default.bDisorientingAttacks = bEnableStalkerDisorientingAttacks;
+    class'AdvZombieStalker'.default.bPiercingAttacks     = bEnableStalkerPiercingAttacks;
+    class'AdvZombieStalker'.default.bLeapIfSpotted       = bEnableStalkerLeapIfSpotted;
+    class'AdvZombieStalker'.default.bPreservativeDodge   = bEnableStalkerPreservativeDodge;
 
     if ((KF.GameDifficulty <= 2.0 && !bIgnoreDifficulty) || StalkerStealthLevel == 0 && bIgnoreDifficulty) {
         RepStalkerStealthLevel = 0;
@@ -119,7 +119,7 @@ event PostBeginPlay() {
 
     // General Configs
     if (bIgnoreDifficulty) {
-        class'AdvZombieStalker_S'.default.bIgnoreDifficulty = bIgnoreDifficulty;
+        class'AdvZombieStalker'.default.bIgnoreDifficulty = bIgnoreDifficulty;
         class'AdvZombieHusk_S'.default.bIgnoreDifficulty = bIgnoreDifficulty;
     }
 }
@@ -190,7 +190,7 @@ defaultproperties {
     bAddToServerPackages=true
 
     replacementArray(0)=(oldClass="KFChar.ZombieHusk",newClass="KFAdvZeds.AdvZombieHusk_S")
-    replacementArray(1)=(oldClass="KFChar.ZombieStalker",newClass="KFAdvZeds.AdvZombieStalker_S")
+    replacementArray(1)=(oldClass="KFChar.ZombieStalker",newClass="KFAdvZeds.AdvZombieStalker")
 
     bEnableHuskMoveAndShoot=true
     bEnableHuskFlamethrower=true
