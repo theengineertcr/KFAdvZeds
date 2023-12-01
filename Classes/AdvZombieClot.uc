@@ -6,8 +6,7 @@
  * License      : GPL 3.0
  * Copyright    : 2023 theengineertcr
  */
-class AdvZombieClot extends AdvZombieClotBase
-    abstract;
+class AdvZombieClot extends KFMonster;
 
 // todo: clot base health to 400, head health to 95,
 // new "brain shot" hitzone above main head that has 25 hp,
@@ -208,7 +207,6 @@ static simulated function PreCacheMaterials(LevelInfo myLevel) {
 }
 
 defaultproperties {
-    EventClasses(0)="KFChar.ZombieClot_STANDARD"
     DetachedArmClass="SeveredArmClot"
     DetachedLegClass="SeveredLegClot"
     DetachedHeadClass="SeveredHeadClot"
