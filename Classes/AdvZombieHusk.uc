@@ -393,6 +393,35 @@ function RemoveHead() {
     super.RemoveHead();
 }
 
+simulated function Timer() {
+    // bSTUNNED variable actually indicates flinching, not stunning! So don't get confused.
+    bSTUNNED = false;
+
+    // If burn tick count > 0, call TakeFireDamage() function.
+    // Otherwise stop burning and turn off the timer
+    if (BurnDown > 0) {
+         // Every tick LastBurnDamage is increased by 3 + random value from 0 to 2 (excluding)
+         // Rebalance - All burn damage now takes into account the BurnDamageScale modifier
+         // This is to prevent Firebugs exploiting flare guns burning Husks to death from a distance
+        TakeFireDamage((LastBurnDamage + rand(2) + 3) * BurnDamageScale, LastDamagedBy);
+        SetTimer(1.0,false); // Sets timer function to be executed each second
+    } else {
+        UnSetBurningBehavior();
+
+        RemoveFlamingEffects();
+        StopBurnFX();
+        SetTimer(0, false);  // Disable timer
+    }
+}
+
+simulated function SetBurningBehavior() {
+    super.SetBurningBehavior();
+    if( Role == Role_Authority) {
+        // Rebalance - Don't become an idiot when you're burning, you're flame incarnate dude
+        Intelligence = default.Intelligence;
+    }
+}
+
 function TakeDamage(
     int Damage,
     Pawn InstigatedBy,
@@ -406,6 +435,19 @@ function TakeDamage(
         Damage *= BurnDamageScale;
     }
 
+    // Rebalance - Reduced damage from pure flame projectiles
+    if (DamageType == class'DamTypeHuskGun'){
+        Damage *= 0.25;
+    }
+    if (DamageType == class'DamTypeHuskGunProjectileImpact'){
+        Damage *= 0.5;
+    }
+    if (DamageType == class'DamTypeFlareRevolver'){
+        Damage *= 0.25;
+    }
+    if (DamageType == class'DamTypeFlareProjectileImpact'){
+        Damage *= 0.5;
+    }
     super.TakeDamage(Damage, instigatedBy ,hitlocation, momentum, damageType, HitIndex);
 }
 
@@ -741,6 +783,14 @@ defaultproperties {
     IdleCrouchAnim="Idle"
     IdleWeaponAnim="Idle"
     IdleRestAnim="Idle"
+    // Husk doesn't have animations for walking and burning, so he
+    // Starts levitating in his idle animation. TWI never fixed this :)
+    BurningWalkFAnims(0)="WalkF"
+    BurningWalkFAnims(1)="WalkF"
+    BurningWalkFAnims(2)="WalkF"
+    BurningWalkAnims(0)="WalkB"
+    BurningWalkAnims(1)="WalkL"
+    BurningWalkAnims(2)="WalkR"
     //SoundRadius=2.5
     AmbientSoundScaling=8.0
     SoundVolume=200
