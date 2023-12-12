@@ -64,7 +64,6 @@ function ClawDamageTarget(){
                 if( DisabledPawn != none ) {
                      DisabledPawn.bMovementDisabled = false;
                 }
-                KFP.Weapon.PutDown();
                 KFP.DisableMovement(GrappleDuration);
                 DisabledPawn = KFP;
             }
@@ -144,8 +143,14 @@ simulated function Tick(float DeltaTime) {
         }
     }
 
+    // This doesn't work because I don't know how to replicate it online
     if(bGrappling && !bPlayedDeath && !bDecapitated){
-        KFP.SetViewRotation(PlayerRot);
+        if(KFP == none){
+            KFP = KFPawn(Controller.Target);
+        }
+        if (KFP != none && KFP.Controller != none && KFP.Rotation != PlayerRot){
+            KFP.SetViewRotation(PlayerRot);
+        }
     }
 
     if( Role == ROLE_Authority && bGrappling ) {
