@@ -136,8 +136,6 @@ simulated function int DoAnimAction( name AnimName ) {
 
 // Scream Time
 simulated function SpawnTwoShots() {
-
-
     if( bZapped || bDecapitated || bPlayedDeath) {
         return;
     }
@@ -246,7 +244,8 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector Hitlocation, Vector M
 
     bIsHeadShot = IsHeadShot(Hitlocation, normal(Momentum), 1.0);
 
-    if(bIsHeadshot && bShotAnim && bStunAllowed){
+    // Sirens that have been headshot have their scream animation interrupted
+    if(bIsHeadshot && bShotAnim && bStunAllowed && Damage >= 100){
         bStunAllowed = false;
         RestunTime = Level.TimeSeconds + 1.0;
         SetAnimAction('HitReactionF');
