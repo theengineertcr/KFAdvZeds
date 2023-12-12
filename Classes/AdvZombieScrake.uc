@@ -20,8 +20,6 @@ class AdvZombieScrake extends KFMonster;
     - Has a grace period where he derages temporarily after killing a player that lasts 15 seconds
  */
 
-#exec OBJ LOAD FILE=PlayerSounds.uax
-
 var bool bEnablePush;               // Scrakes pushes zeds and players away while charging.
 var bool bFocusTarget;              // Scrake will pursue the first player he sees until they die or they lose sight of them for more than 10-15 seconds.
 var bool bEnableThrow;              // Scrake will knock players infront of him away if they block him from his main target. If possible, when this happens, all zeds target this player.
