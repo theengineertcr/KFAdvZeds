@@ -193,6 +193,7 @@ defaultproperties {
     replacementArray(1)=(oldClass="KFChar.ZombieStalker",newClass="KFAdvZeds.AdvZombieStalker")
     replacementArray(2)=(oldClass="KFChar.ZombieClot",newClass="KFAdvZeds.AdvZombieClot")
     replacementArray(3)=(oldClass="KFChar.ZombieBloat",newClass="KFAdvZeds.AdvZombieBloat")
+    replacementArray(4)=(oldClass="KFChar.ZombieSiren",newClass="KFAdvZeds.AdvZombieSiren")
 
     bEnableHuskMoveAndShoot=true
     bEnableHuskFlamethrower=true
